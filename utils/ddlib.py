@@ -22,7 +22,7 @@ class IMU:
 
         # Initialisation de la verticale
         self.g_est = np.array([[0], [0], [1]])
-        self.lambda_obs = 0.9  # Facteur d'atténuation de l'observateur
+        self.lambda_obs = 0.99  # Facteur d'atténuation de l'observateur
 
     def load_calibration(self, filename):
         """Charge les matrices de calibration pour le magnétomètre et l'accéléromètre."""
