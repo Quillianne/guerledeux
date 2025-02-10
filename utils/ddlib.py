@@ -51,7 +51,7 @@ class IMU:
         """Calcule les angles d'Euler (roll, pitch, yaw)."""
         mag, acc = self.get_corrected_measurements()
         gyro = np.array(self.imu.read_gyro_raw()).reshape(3, 1)
-        print("gyro: ", gyro.flatten)
+        print("gyro: ", gyro.flatten())
         g1 = self.estimate_vertical(gyro, acc)
         
         roll = np.arcsin(np.dot([0, 1, 0], g1.flatten()))
