@@ -5,7 +5,7 @@ import os, sys
 # Ajout du chemin vers le répertoire contenant les drivers
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'drivers-ddboat-v2'))
 import imu9_driver_v2 as imudrv
-
+import time
 class IMUCalibration:
     def __init__(self):
         self.imu = imudrv.Imu9IO()
@@ -19,11 +19,12 @@ class IMUCalibration:
         input("Positionne l'IMU en " + label + " et appuie sur Entrée...")
         measurements = []
 
-        for _ in range(10):
+        for _ in range(50):
             if sensor_type == "mag":
                 measurements.append(self.imu.read_mag_raw())
             elif sensor_type == "acc":
                 measurements.append(self.imu.read_accel_raw())
+            time.sleep(0.01)
 
         return np.mean(measurements, axis=0)
 
