@@ -25,10 +25,7 @@ class IMU:
         self.b_mag = data["b_mag"].reshape(3,1)
         self.A_acc = data["A_acc"]
         self.b_acc = data["b_acc"].reshape(3,1)
-        print("A_mag: ", self.A_mag)
-        print("b_mag: ", self.b_mag)
-        print("A_acc: ", self.A_acc)
-        print('b_acc: ', self.b_acc)
+
         print("Calibration chargée depuis", filename)
 
     def get_corrected_measurements(self):
@@ -39,7 +36,6 @@ class IMU:
         mag_corrected = np.linalg.inv(self.A_mag) @ (mag_raw + self.b_mag)
         acc_corrected = np.linalg.inv(self.A_acc) @ (acc_raw + self.b_acc)
 
-        print("Mag:", mag_corrected.flatten(), "Acc:", acc_corrected.flatten())
         return mag_corrected, acc_corrected
 
     def estimate_vertical(self, gyro, acc):
@@ -48,9 +44,7 @@ class IMU:
         skew_w = adjoint(gyro.flatten())
         self.g_est = self.lambda_obs * (np.eye(3) - dt * skew_w) @ self.g_est + (1 - self.lambda_obs) * acc
         self.g_est /= np.linalg.norm(self.g_est)  # Normalisation
-        print("Estimation verticale:", self.g_est.flatten())
-        print((np.eye(3) - dt * skew_w))
-        print((1 - self.lambda_obs) * acc)
+
         return self.g_est
 
     def get_euler_angles(self):
@@ -72,4 +66,5 @@ class IMU:
 if __name__ == "__main__":
     imu = IMU()
     roll, pitch, yaw = imu.get_euler_angles()
-    print("Roll:", np.degrees(roll), "Pitch:", np.degrees(pitch), "Yaw:", np.degrees(yaw))
+    #print("Roll:", np.degrees(roll), "Pitch:", np.degrees(pitch), "Yaw:", np.degrees(yaw))
+    print("Yaw:", np.degrees(yaw))
