@@ -16,7 +16,7 @@ class IMU:
         self.b_acc = None
         self.load_calibration(calibration_file)
         self.g_est = np.array([[0], [0], [1]])  # Estimation initiale de la verticale
-        self.lambda_obs = 0.99  # Facteur d'atténuation de l'observateur
+        self.lambda_obs = 0  # Facteur d'atténuation de l'observateur
 
     def load_calibration(self, filename):
         """Charge les matrices de calibration depuis un fichier."""
@@ -36,6 +36,7 @@ class IMU:
         mag_corrected = np.linalg.inv(self.A_mag) @ (mag_raw + self.b_mag)
         acc_corrected = np.linalg.inv(self.A_acc) @ (acc_raw + self.b_acc)
 
+        print("Mag:", mag_corrected.flatten(), "Acc:", acc_corrected.flatten())
         return mag_corrected, acc_corrected
 
     def estimate_vertical(self, gyro, acc):

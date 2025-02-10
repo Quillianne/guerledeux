@@ -25,7 +25,8 @@ def main():
     try:
         while True:
             roll, pitch, yaw = imu.get_euler_angles()
-            print("Roll:", np.degrees(roll), "Pitch:", np.degrees(pitch), "Yaw:", np.degrees(yaw))
+            #print("Roll:", np.degrees(roll), "Pitch:", np.degrees(pitch), "Yaw:", np.degrees(yaw))
+            print("Yaw:", np.degrees(yaw))
             time.sleep(0.1)  # Mise à jour toutes les 100 ms
     except KeyboardInterrupt:
         print("\nArrêt du programme.")
