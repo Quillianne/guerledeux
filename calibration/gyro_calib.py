@@ -6,6 +6,8 @@ import time
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'drivers-ddboat-v2'))
 import imu9_driver_v2 as imudrv
 
+from settings import GYRO_CALIBRATION_FILE
+
 class GyroCalibration:
     def __init__(self):
         self.imu = imudrv.Imu9IO()
@@ -24,7 +26,7 @@ class GyroCalibration:
 
         print("Offset du gyroscope calculé :", self.gyro_offset)
 
-    def save_calibration(self, filename="gyro_calibration.npz"):
+    def save_calibration(self, filename=GYRO_CALIBRATION_FILE):
         """Sauvegarde l'offset du gyroscope."""
         np.savez(filename, gyro_offset=self.gyro_offset)
         print("Calibration du gyroscope sauvegardée dans", filename)

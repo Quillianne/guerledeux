@@ -1,11 +1,13 @@
 import numpy as np
-
 import os, sys
+
+from settings import CALIBRATION_FILE
 
 # Ajout du chemin vers le répertoire contenant les drivers
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'drivers-ddboat-v2'))
 import imu9_driver_v2 as imudrv
 import time
+
 class IMUCalibration:
     def __init__(self):
         self.imu = imudrv.Imu9IO()
@@ -80,12 +82,12 @@ class IMUCalibration:
 
         print("Calibration de l'accelerometre terminee.")
 
-    def save_calibration(self, filename="imu_calibration.npz"):
+    def save_calibration(self, filename=CALIBRATION_FILE):
         """Sauvegarde les matrices de calibration"""
         np.savez(filename, A_mag=self.A_mag, b_mag=self.b_mag, A_acc=self.A_acc, b_acc=self.b_acc)
         print("Calibration sauvegardee dans " + filename)
 
-    def load_calibration(self, filename="imu_calibration.npz"):
+    def load_calibration(self, filename=CALIBRATION_FILE):
         """Charge les matrices de calibration depuis un fichier"""
         data = np.load(filename)
         self.A_mag = data["A_mag"]

@@ -6,7 +6,8 @@ from calibration.gyro_calib import GyroCalibration  # Importation de la calibrat
 from utils.ddlib import IMU
 
 # Fichiers de calibration
-from settings import CALIBRATION_FILE, GYRO_CALIBRATION_FILE
+CALIBRATION_FILE = "imu_calibration.npz"
+GYRO_CALIBRATION_FILE = "gyro_calibration.npz"
 
 def main():
     # Vérifier si la calibration de l'IMU existe

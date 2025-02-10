@@ -1,19 +1,24 @@
 import numpy as np
 import os
 import sys
+import time
+
 from utils.roblib import *  # Importation des fonctions nécessaires
 
 # Ajouter le chemin vers le dossier des drivers
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'drivers-ddboat-v2'))
 import imu9_driver_v2 as imudrv
 
+from settings import CALIBRATION_FILE, GYRO_CALIBRATION_FILE
+
 class IMU:
-    def __init__(self, calibration_file="imu_calibration.npz", gyro_calib_file="gyro_calibration.npz"):
+    def __init__(self, calibration_file=CALIBRATION_FILE, gyro_calib_file=GYRO_CALIBRATION_FILE, dt = 0.01):
         self.imu = imudrv.Imu9IO()
         self.A_mag = None
         self.b_mag = None
         self.A_acc = None
         self.b_acc = None
+        self.dt = dt
         self.gyro_offset = np.zeros((3, 1))  # Par défaut, pas de correction s'il n'y a pas de fichier de calibration
 
         # Chargement des calibrations
@@ -60,11 +65,10 @@ class IMU:
 
     def estimate_vertical(self, gyro, acc):
         """Applique l'observateur de Luenberger pour estimer la verticale."""
-        dt = 0.01  # Intervalle de temps
 
         skew_w = adjoint(np.radians(0.1*gyro.flatten()))
 
-        self.g_est = self.lambda_obs * (np.eye(3) - dt * skew_w) @ self.g_est + (1 - self.lambda_obs) * acc
+        self.g_est = self.lambda_obs * (np.eye(3) - self.dt * skew_w) @ self.g_est + (1 - self.lambda_obs) * acc
         self.g_est /= np.linalg.norm(self.g_est)  # Normalisation
 
         return self.g_est
@@ -85,6 +89,72 @@ class IMU:
         yaw = -np.arctan2(mag_horizontal[1, 0], mag_horizontal[0, 0])
         
         return roll, pitch, yaw
+
+
+class Navigation:
+    def __init__(self, imu, arduino, Kp=1.0, max_speed=100):
+        """
+        Initialize Navigation system.
+        
+        :param imu: IMU instance to get the current heading.
+        :param arduino: Arduino instance to control the motors.
+        :param Kp: Proportional gain for error correction.
+        :param max_speed: Maximum speed for the motors.
+        """
+        self.imu = imu
+        self.arduino = arduino
+        self.Kp = Kp  # Proportional gain
+        self.max_speed = max_speed  # Maximum motor speed
+
+    def get_current_heading(self):
+        """Get the current heading (yaw angle) from the IMU."""
+        _, _, yaw = self.imu.get_euler_angles()
+        return np.degrees(yaw)  # Convert to degrees
+
+    def follow_cap(self, target_cap, duration):
+        """
+        Make the boat follow the desired heading for a given duration.
+
+        :param target_cap: Desired heading in degrees.
+        :param duration: Time in seconds to maintain the heading.
+        """
+        start_time = time.time()
+
+        while time.time() - start_time < duration:
+            # Get current heading
+            current_heading = self.get_current_heading()
+            
+            # Compute heading error
+            error = target_cap - current_heading
+            error = (error + 180) % 360 - 180  # Keep error within [-180, 180] degrees
+            
+            # Compute correction using proportional control
+            correction = self.Kp * error
+
+            # Set motor speeds based on correction
+            base_speed = self.max_speed * 0.5  # Base speed at 50% max
+            left_motor = base_speed - correction
+            right_motor = base_speed + correction
+
+            # Clip motor speeds within valid range
+            left_motor = np.clip(left_motor, -self.max_speed, self.max_speed)
+            right_motor = np.clip(right_motor, -self.max_speed, self.max_speed)
+
+            # Send speed commands to motors
+            self.arduino.send_arduino_cmd_motor(left_motor, right_motor)
+
+            # Debugging output
+            print("Current:", round(current_heading, 2), "Target:", target_cap, 
+                  "Error:", round(error, 2), "L:", round(left_motor, 2), 
+                  "R:", round(right_motor, 2))
+
+            time.sleep(imu.dt)  # Update rate of 10 Hz
+
+        # Stop the motors after duration
+        self.arduino.send_arduino_cmd_motor(0, 0)
+        print("Navigation complete. Motors stopped.")
+
+
 
 # Exemple d'utilisation
 if __name__ == "__main__":
