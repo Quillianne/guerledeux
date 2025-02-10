@@ -4,10 +4,12 @@ import sys
 import time
 
 from utils.roblib import *  # Importation des fonctions nécessaires
+import utils.geo_conversion as geo
 
 # Ajouter le chemin vers le dossier des drivers
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'drivers-ddboat-v2'))
 import imu9_driver_v2 as imudrv
+import gps_driver_v2 as gpsdrv
 
 from settings import CALIBRATION_FILE, GYRO_CALIBRATION_FILE
 
@@ -152,6 +154,28 @@ class Navigation:
         # Stop the motors after duration
         self.arduino.send_arduino_cmd_motor(0, 0)
         print("Navigation complete. Motors stopped.")
+
+
+
+class GPS():
+    def __init__(self):
+        gps = gpsdrv.GpsIO()
+        gps.set_filter_speed("0")
+
+        last_gps_data = (48.1996872, -3.0153766)
+
+    def get_gps(self):
+        """Read GPS data from the serial port."""
+        gll_ok, gll_data = self.gps.read_gll_non_blocking()
+        if gll_ok:
+            return gll_data
+        return self.last_gps_data
+    
+    def get_coords(self):
+        """returns the current cartesian coordinates (x,y) of the boat"""
+        point = self.get_gps()
+        x, y = geo.conversion_spherique_cartesien(point, lat_m=48.1996872, long_m=-3.0153766, rho=6371000)
+        return x, y
 
 
 
