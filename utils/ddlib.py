@@ -33,6 +33,7 @@ class IMU:
         acc_raw = np.array(self.imu.read_accel_raw()).reshape(3, 1)
         mag_corrected = np.linalg.inv(self.A_mag) @ (mag_raw + self.b_mag)
         acc_corrected = np.linalg.inv(self.A_acc) @ (acc_raw + self.b_acc)
+        print("Mag:", mag_corrected.flatten(), "Acc:", acc_corrected.flatten())
         return mag_corrected, acc_corrected
 
     def estimate_vertical(self, gyro, acc):
@@ -41,6 +42,7 @@ class IMU:
         skew_w = adjoint(gyro.flatten())
         self.g_est = self.lambda_obs * (np.eye(3) - dt * skew_w) @ self.g_est + (1 - self.lambda_obs) * acc
         self.g_est /= np.linalg.norm(self.g_est)  # Normalisation
+        print("Estimation verticale:", self.g_est.flatten())
         return self.g_est
 
     def get_euler_angles(self):
