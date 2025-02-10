@@ -35,6 +35,8 @@ class IMU:
         """Retourne les mesures corrigées du magnétomètre et de l'accéléromètre."""
         mag_raw = np.array(self.imu.read_mag_raw()).reshape(3, 1)
         acc_raw = np.array(self.imu.read_accel_raw()).reshape(3, 1)
+        print("Shape b_mag: ", self.b_mag.shape)
+        print("Shape mag_raw: ", mag_raw.shape)
         mag_corrected = np.linalg.inv(self.A_mag) @ (mag_raw + self.b_mag)
         acc_corrected = np.linalg.inv(self.A_acc) @ (acc_raw + self.b_acc)
         print("Mag:", mag_corrected.flatten(), "Acc:", acc_corrected.flatten())
