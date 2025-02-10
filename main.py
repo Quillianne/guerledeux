@@ -36,7 +36,11 @@ def main():
 
     try:
         while True:
-            roll, pitch, yaw = imu.get_euler_angles()
+            euler_measurements = []
+            for _ in range(5):
+                euler_measurements.append(self.imu.get_euler_angles())
+                time.sleep(0.02)
+            roll, pitch, yaw = np.mean(euler_measurements, axis=0)
             print("Yaw:", np.degrees(yaw))
             time.sleep(0.1)  # Mise à jour toutes les 100 ms
     except KeyboardInterrupt:
