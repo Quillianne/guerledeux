@@ -22,7 +22,7 @@ class IMU:
 
         # Initialisation de la verticale
         self.g_est = np.array([[0], [0], [1]])
-        self.lambda_obs = 0.99  # Facteur d'atténuation de l'observateur
+        self.lambda_obs = 0.7  # Facteur d'atténuation de l'observateur
 
     def load_calibration(self, filename):
         """Charge les matrices de calibration pour le magnétomètre et l'accéléromètre."""
@@ -72,7 +72,7 @@ class IMU:
         """Calcule les angles d'Euler (roll, pitch, yaw) avec correction du gyroscope."""
         mag, acc = self.get_corrected_measurements()
         gyro = self.get_corrected_gyro()  # Utilise le gyroscope corrigé
-        print("Gyro corrigé:", gyro.flatten())
+        #print("Gyro corrigé:", gyro.flatten())
 
         g1 = self.estimate_vertical(gyro, acc)
         
