@@ -148,7 +148,7 @@ class Navigation:
                   "Error:", round(error, 2), "L:", round(left_motor, 2), 
                   "R:", round(right_motor, 2))
 
-            time.sleep(imu.dt)  # Update rate of 10 Hz
+            time.sleep(self.imu.dt)  # Update rate of 10 Hz
 
         # Stop the motors after duration
         self.arduino.send_arduino_cmd_motor(0, 0)

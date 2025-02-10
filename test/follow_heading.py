@@ -21,7 +21,7 @@ navigation = Navigation(imu, arduino, Kp=1.5, max_speed=0)
 target_heading = 90  # Exemple : maintenir un cap de 90° (Est)
 
 # Durée du suivi de cap en secondes
-duration = 30  
+duration = 5  
 
 print("Démarrage du suivi de cap...")
 navigation.follow_cap(target_heading, duration)
