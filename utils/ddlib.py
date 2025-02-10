@@ -146,11 +146,10 @@ class Navigation:
             self.arduino.send_arduino_cmd_motor(left_motor, right_motor)
 
             # Debugging output
-            print("Current:", round(current_heading, 2), "Target:", target_cap, 
-                  "Error:", round(error, 2), "L:", round(left_motor, 2), 
-                  "R:", round(right_motor, 2))
+            print("Target:", target_cap, "Current:", round(current_heading, 2), 
+                  "Error:", round(error, 2), end="\r")
 
-            time.sleep(imu.dt)  # Update rate of 10 Hz
+            time.sleep(self.imu.dt)  # Update rate of 10 Hz
 
         # Stop the motors after duration
         self.arduino.send_arduino_cmd_motor(0, 0)
