@@ -25,6 +25,10 @@ class IMU:
         self.b_mag = data["b_mag"]
         self.A_acc = data["A_acc"]
         self.b_acc = data["b_acc"]
+        print("A_mag: ", self.A_mag)
+        print("b_mag: ", self.b_mag)
+        print("A_acc: ", self.A_acc)
+        print('b_acc: ', self.b_acc)
         print("Calibration chargée depuis", filename)
 
     def get_corrected_measurements(self):
