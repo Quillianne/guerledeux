@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import sys
-from roblib import *  # Importation des fonctions nécessaires
+from utils.roblib import *  # Importation des fonctions nécessaires
 # Ajouter le chemin vers le dossier des drivers
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'drivers-ddboat-v2'))
