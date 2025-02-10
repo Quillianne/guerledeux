@@ -22,7 +22,7 @@ class IMU:
 
         # Initialisation de la verticale
         self.g_est = np.array([[0], [0], [1]])
-        self.lambda_obs = 0.8  # Facteur d'atténuation de l'observateur
+        self.lambda_obs = 0.99  # Facteur d'atténuation de l'observateur
 
     def load_calibration(self, filename):
         """Charge les matrices de calibration pour le magnétomètre et l'accéléromètre."""
@@ -61,8 +61,8 @@ class IMU:
     def estimate_vertical(self, gyro, acc):
         """Applique l'observateur de Luenberger pour estimer la verticale."""
         dt = 0.01  # Intervalle de temps
-        print(np.radians(0.1*gyro.flatten()))
-        skew_w = adjoint(gyro.flatten())
+
+        skew_w = adjoint(np.radians(0.1*gyro.flatten()))
 
         self.g_est = self.lambda_obs * (np.eye(3) - dt * skew_w) @ self.g_est + (1 - self.lambda_obs) * acc
         self.g_est /= np.linalg.norm(self.g_est)  # Normalisation
