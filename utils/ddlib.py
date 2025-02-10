@@ -61,6 +61,7 @@ class IMU:
     def estimate_vertical(self, gyro, acc):
         """Applique l'observateur de Luenberger pour estimer la verticale."""
         dt = 0.01  # Intervalle de temps
+        print(gyro.flatten())
         skew_w = adjoint(gyro.flatten())
 
         self.g_est = self.lambda_obs * (np.eye(3) - dt * skew_w) @ self.g_est + (1 - self.lambda_obs) * acc
