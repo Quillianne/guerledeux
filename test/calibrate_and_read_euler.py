@@ -1,6 +1,9 @@
 import time
-import os
+import os, sys
 import numpy as np
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 from calibration.magnetometer_calib import IMUCalibration
 from calibration.gyro_calib import GyroCalibration  # Importation de la calibration du gyroscope
 from utils.ddlib import IMU
