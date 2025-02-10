@@ -31,16 +31,16 @@ class IMU:
         self.b_mag = data["b_mag"].reshape(3,1)
         self.A_acc = data["A_acc"]
         self.b_acc = data["b_acc"].reshape(3,1)
-        print(f"Calibration IMU chargée depuis {filename}")
+        print("Calibration IMU chargée depuis", filename)
 
     def load_gyro_calibration(self, filename):
         """Charge l'offset du gyroscope depuis un fichier."""
         if os.path.exists(filename):
             data = np.load(filename)
             self.gyro_offset = data["gyro_offset"].reshape(3, 1)
-            print(f"Calibration du gyroscope chargée : {self.gyro_offset.flatten()}")
+            print("Calibration du gyroscope chargée :", self.gyro_offset.flatten())
         else:
-            print(f"Fichier {filename} introuvable, le gyroscope ne sera pas corrigé.")
+            print("Fichier", filename, "introuvable, le gyroscope ne sera pas corrigé.")
 
     def get_corrected_measurements(self):
         """Retourne les mesures corrigées du magnétomètre et de l'accéléromètre."""

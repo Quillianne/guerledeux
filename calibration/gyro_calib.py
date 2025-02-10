@@ -13,7 +13,7 @@ class GyroCalibration:
 
     def calibrate_gyroscope(self, num_samples=50):
         """Calibre le gyroscope en prenant la moyenne de plusieurs mesures."""
-        print(f"Acquisition de {num_samples} mesures du gyroscope...")
+        print("Acquisition de", num_samples, "mesures du gyroscope...")
 
         gyro_measurements = []
         for _ in range(num_samples):
@@ -22,18 +22,18 @@ class GyroCalibration:
 
         self.gyro_offset = np.mean(gyro_measurements, axis=0)
 
-        print(f"Offset du gyroscope calculé : {self.gyro_offset}")
+        print("Offset du gyroscope calculé :", self.gyro_offset)
 
     def save_calibration(self, filename="gyro_calibration.npz"):
         """Sauvegarde l'offset du gyroscope."""
         np.savez(filename, gyro_offset=self.gyro_offset)
-        print(f"Calibration du gyroscope sauvegardée dans {filename}")
+        print("Calibration du gyroscope sauvegardée dans", filename)
 
     def load_calibration(self, filename="gyro_calibration.npz"):
         """Charge l'offset du gyroscope."""
         data = np.load(filename)
         self.gyro_offset = data["gyro_offset"]
-        print(f"Calibration du gyroscope chargée depuis {filename}")
+        print("Calibration du gyroscope chargée depuis", filename)
 
 # Exécution de la calibration
 if __name__ == "__main__":
