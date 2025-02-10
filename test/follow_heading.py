@@ -5,17 +5,18 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from utils.ddlib import IMU, Navigation
+from settings import DT
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'drivers-ddboat-v2'))
 import arduino_driver_v2 as arddrv
 
 
 # Initialisation des capteurs et des moteurs
-imu = IMU(dt = 0.01)
+imu = IMU(dt = DT)
 arduino = arddrv.ArduinoIO()
 
 # Création de l'instance de navigation
-navigation = Navigation(imu, arduino, Kp=1.5, max_speed=120)
+navigation = Navigation(imu, arduino, Kp=1.5, max_speed=240)
 
 # Définition du cap cible (en degrés)
 target_heading = 90  # Exemple : maintenir un cap de 90° (Est)
