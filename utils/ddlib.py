@@ -36,7 +36,6 @@ class IMU:
         mag_corrected = np.linalg.inv(self.A_mag) @ (mag_raw + self.b_mag)
         acc_corrected = np.linalg.inv(self.A_acc) @ (acc_raw + self.b_acc)
 
-        print("Mag:", mag_corrected.flatten(), "Acc:", acc_corrected.flatten())
         return mag_corrected, acc_corrected
 
     def estimate_vertical(self, gyro, acc):
@@ -52,6 +51,7 @@ class IMU:
         """Calcule les angles d'Euler (roll, pitch, yaw)."""
         mag, acc = self.get_corrected_measurements()
         gyro = np.array(self.imu.read_gyro_raw()).reshape(3, 1)
+        print("gyro: ", gyro)
         g1 = self.estimate_vertical(gyro, acc)
         
         roll = np.arcsin(np.dot([0, 1, 0], g1.flatten()))
