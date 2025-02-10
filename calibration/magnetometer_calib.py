@@ -35,7 +35,7 @@ class IMUCalibration:
         xN = self.acquire_measurement("mag", "Nord a plat")
         xS = self.acquire_measurement("mag", "Sud a l'envers")
         xW = self.acquire_measurement("mag", "Ouest a plat")
-        xU = self.acquire_measurement("mag", "Vertical Z vers le haut")
+        xU = self.acquire_measurement("mag", "Vertical Z vers le nord")
 
         # Constantes
         I = np.radians(64)  # Inclinaison du champ magnetique en radians

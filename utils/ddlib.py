@@ -47,6 +47,8 @@ class IMU:
         self.g_est = self.lambda_obs * (np.eye(3) - dt * skew_w) @ self.g_est + (1 - self.lambda_obs) * acc
         self.g_est /= np.linalg.norm(self.g_est)  # Normalisation
         print("Estimation verticale:", self.g_est.flatten())
+        print((np.eye(3) - dt * skew_w))
+        print((1 - self.lambda_obs) * acc)
         return self.g_est
 
     def get_euler_angles(self):
