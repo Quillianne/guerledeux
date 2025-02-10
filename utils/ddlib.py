@@ -146,7 +146,7 @@ class Navigation:
             # Debugging output
             print("Current:", round(current_heading, 2), "Target:", target_cap, 
                   "Error:", round(error, 2), "L:", round(left_motor, 2), 
-                  "R:", round(right_motor, 2))
+                  "R:", round(right_motor, 2), end="\r")
 
             time.sleep(self.imu.dt)  # Update rate of 10 Hz
 
