@@ -18,4 +18,4 @@ while True:
     time.sleep(0.05)
     gps.get_coords()
     print("coordonnées gps :", gps.gps_position,
-          "  ||  coordonnées cartésiennes :", gps.x, gps.y, end="\r")
+          " | coordonnées cartésiennes :", gps.x, gps.y, end="\r")
