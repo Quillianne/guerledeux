@@ -94,17 +94,19 @@ class IMU:
 
 
 class Navigation:
-    def __init__(self, imu, arduino_driver, Kp=1.0, max_speed=100):
+    def __init__(self, imu, gps, arduino_driver, Kp=1.0, max_speed=100):
         """
         Initialize Navigation system.
         
         :param imu: IMU instance to get the current heading.
+        :param gps: GPS instance to get the current coordinates.
         :param arduino: Arduino instance to control the motors.
         :param Kp: Proportional gain for error correction.
         :param max_speed: Maximum speed for the motors.
         """
         self.imu = imu
         self.imu_driver = self.imu.imu_driver
+        self.gps = gps
         self.arduino_driver = arduino_driver
         self.Kp = Kp  # Proportional gain
         self.max_speed = max_speed  # Maximum motor speed
@@ -226,6 +228,64 @@ class Navigation:
                       "Error:", round(error, 2), "Distance:", round(distance, 2), end="\r")
         self.arduino_driver.send_arduino_cmd_motor(0, 0)
         print("Fin de chantier")
+
+    
+    def follow_gps(self, target_coords, cartesian=True, distance=5):
+        """
+        Make the boat follow the desired GPS coordinates for a given duration.
+
+        :param target_coords: Tuple of target GPS coordinates (latitude, longitude).
+        :param cartesian: If True, enter cartesian coordinates in the 'target_coords' arg, else use GPS coords.
+        :param distance: distance to stop to the target
+        """
+
+        # if the target coordinates are in gps
+        if not cartesian:
+            # convert them to cartesian
+            target_coords = geo.conversion_spherique_cartesien(target_coords, lat_m=48.1996872, long_m=-3.0153766, rho=6371000)
+        target_coords = np.array(target_coords)
+
+        distance_target = np.inf
+
+        while distance_target > distance:
+            
+            # get current gps coordinates in cartesian
+            current_coords = np.array(self.gps.get_coords())
+            
+            # Compute heading to target
+            delta_coords = target_coords - current_coords
+            target_heading = np.degrees(np.atan2(delta_coords))
+
+            # Compute distance to target
+            distance_target = np.linalg.norm(delta_coords)
+
+            # get current heading
+            current_heading = self.get_current_heading()
+            
+            # Error
+            error = target_heading - current_heading
+            error = (error + 180) % 360 - 180  # Keep error within [-180, 180] degrees
+            correction = self.Kp * error
+
+            # Proportional command to the motors
+            base_speed = self.max_speed * distance_target/10
+            left_motor = base_speed - correction
+            right_motor = base_speed + correction
+
+            # Clip motor speeds within valid range
+            left_motor = np.clip(left_motor, -self.max_speed, self.max_speed)
+            right_motor = np.clip(right_motor, -self.max_speed, self.max_speed)
+
+            # Send speed commands to motors
+            self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
+            
+            time.sleep(self.imu.dt)  # Update rate of 10 Hz
+
+        # Stop the motors after duration
+        self.arduino_driver.send_arduino_cmd_motor(0, 0)
+
+        
+
 
 class GPS():
     def __init__(self, debug = False):
