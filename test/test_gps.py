@@ -17,5 +17,5 @@ gps = ddlib.GPS()
 while True:
     time.sleep(1)
     gps.get_coords()
-    print("coordonnées gps :", gps.gps_position)
-    print("coordonnées cartésiennes :", gps.x, gps.y, end="\r")
+    print("coordonnées gps :", gps.gps_position, "\n",
+            "coordonnées cartésiennes :", gps.x, gps.y, end="\r")
