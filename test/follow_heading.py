@@ -25,5 +25,5 @@ target_heading = 90  # Exemple : maintenir un cap de 90° (Est)
 duration = 20  
 
 print("Démarrage du suivi de cap...")
-navigation.follow_cap(target_heading, duration)
+navigation.follow_heading(target_heading, duration)
 print("Test de suivi de cap terminé.")
