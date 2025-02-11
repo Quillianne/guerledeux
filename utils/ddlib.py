@@ -199,9 +199,7 @@ class Navigation:
             x, y = f(t) #pos de la cible
             vx, vy = fdot(t) #v de la cible
             px, py = self.gps.get_coords() #pos du bateau
-            print(px, py)
             if px != None and py != None:
-                print("bien rentre dans le if")
                 #calcul du cap à viser
                 vector_to_target = np.array([x, y]) - np.array([px, py])
                 distance = np.linalg.norm(vector_to_target)
