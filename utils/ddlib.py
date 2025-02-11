@@ -2,6 +2,7 @@ import numpy as np
 import os
 import sys
 import time
+import datetime
 
 from utils.roblib import *  # Importation des fonctions nécessaires
 import utils.geo_conversion as geo
@@ -92,6 +93,78 @@ class IMU:
         
         return roll, pitch, yaw
 
+class GPS():
+    def __init__(self, debug = False):
+        self.gps = gpsdrv.GpsIO()
+        self.gps.set_filter_speed("0")
+        self.gps_position = None
+        self.debug = debug
+        self.x = None
+        self.y = None
+        self.gps_history = []
+
+    def get_gps(self):
+        """Read GPS data from the serial port."""
+        gll_ok, gll_data = self.gps.read_gll_non_blocking()
+        if gll_ok:
+            if self.debug == True:
+                print("Debug gll: ", gll_data)
+            latitude = geo.convert_to_decimal_degrees(gll_data[0], gll_data[1])
+            longitude = geo.convert_to_decimal_degrees(gll_data[2], gll_data[3])
+            if latitude != 0 and longitude != 0:
+                timestamp = datetime.datetime.now() 
+                self.gps_position = (latitude, longitude)
+                self.gps_history.append(latitude, longitude, timestamp)
+        return self.gps_position
+    
+    def get_coords(self):
+        """returns the current cartesian coordinates (x,y) of the boat"""
+        point = self.get_gps()
+        if point != None:
+            self.x, self.y = geo.conversion_spherique_cartesien(point)
+        return self.x, self.y
+    
+    def export_gpx(self, filename="output.gpx"):
+        """
+        Exports the recorded GPS history to a GPX file, including time stamps.
+
+        :param filename: The name/path of the output GPX file.
+        """
+        # Minimal GPX file header
+        gpx_header = """<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="GPS Python Class" xmlns="http://www.topografix.com/GPX/1/1">
+  <trk>
+    <name>GPS Track</name>
+    <trkseg>
+"""
+        # Minimal GPX file footer
+        gpx_footer = """    </trkseg>
+  </trk>
+</gpx>
+"""
+
+        with open(filename, "w", encoding="utf-8") as f:
+            # Write header
+            f.write(gpx_header)
+
+            # Write each GPS point: (lat, lon, datetime)
+            for lat, lon, dt in self.gps_history:
+                # Ensure dt is a string in ISO 8601
+                # Example: 2023-02-11T15:04:05Z
+                if isinstance(dt, datetime.datetime):
+                    # If dt is timezone-aware, it might already be UTC.
+                    # Otherwise, you can manually convert or just append "Z".
+                    time_str = dt.isoformat() + "Z"
+                else:
+                    # If you stored dt as a string, ensure it matches ISO 8601
+                    time_str = str(dt)
+
+                f.write(f'      <trkpt lat="{lat}" lon="{lon}">\n')
+                f.write(f'        <time>{time_str}</time>\n')
+                f.write( '      </trkpt>\n' )
+
+            # Write footer
+            f.write(gpx_footer)
 
 class Navigation:
     def __init__(self, imu, gps, arduino_driver, Kp=1.0, max_speed=100):
@@ -291,67 +364,6 @@ class Navigation:
 
         # Stop the motors after duration
         self.arduino_driver.send_arduino_cmd_motor(0, 0)
-
-        
-
-
-class GPS():
-    def __init__(self, debug = False):
-        self.gps = gpsdrv.GpsIO()
-        self.gps.set_filter_speed("0")
-        self.gps_position = None
-        self.debug = debug
-        self.x = None
-        self.y = None
-        self.gps_history = []
-
-    def get_gps(self):
-        """Read GPS data from the serial port."""
-        gll_ok, gll_data = self.gps.read_gll_non_blocking()
-        if gll_ok:
-            if self.debug == True:
-                print("Debug gll: ", gll_data)
-            latitude = geo.convert_to_decimal_degrees(gll_data[0], gll_data[1])
-            longitude = geo.convert_to_decimal_degrees(gll_data[2], gll_data[3])
-            if latitude != 0 and longitude != 0:
-                self.gps_position = (latitude, longitude)
-                self.gps_history.append(self.gps_position)
-        return self.gps_position
-    
-    def get_coords(self):
-        """returns the current cartesian coordinates (x,y) of the boat"""
-        point = self.get_gps()
-        if point != None:
-            self.x, self.y = geo.conversion_spherique_cartesien(point)
-        return self.x, self.y
-    
-    def export_gpx(self, filename="output.gpx"):
-        """
-        Exports the recorded GPS history to a GPX file.
-
-        :param filename: The name/path of the output GPX file.
-        """
-        # Minimal GPX file header
-        gpx_header = """<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="GPS Python Class" xmlns="http://www.topografix.com/GPX/1/1">
-  <trk>
-    <name>GPS Track</name>
-    <trkseg>
-"""
-        # Minimal GPX file footer
-        gpx_footer = """    </trkseg>
-  </trk>
-</gpx>
-"""
-
-        # Write header
-        with open(filename, "w", encoding="utf-8") as f:
-            f.write(gpx_header)
-            # Write each GPS point
-            for lat, lon in self.gps_history:
-                f.write('      <trkpt lat="{0}" lon="{1}"></trkpt>\n'.format(lat, lon))
-            # Write footer
-            f.write(gpx_footer)
 
 
 
