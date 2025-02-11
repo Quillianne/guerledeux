@@ -348,7 +348,7 @@ class GPS():
             f.write(gpx_header)
             # Write each GPS point
             for lat, lon in self.gps_history:
-                f.write(f'      <trkpt lat="{lat}" lon="{lon}"></trkpt>\n')
+                f.write('      <trkpt lat="{0}" lon="{1}"></trkpt>\n'.format(lat, lon))
             # Write footer
             f.write(gpx_footer)
 

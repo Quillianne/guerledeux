@@ -11,7 +11,7 @@ def circle_trajectory(t, R = RAYON_CIRCLE, f = FREQUENCE_CIRCLE, M = POINT_BOUEE
     """
     dessine un cercle de rayon R autour du point M
     """
-    a0, a1 = geo_conversion.conversion_spherique_cartesien(M[0], M[1])
+    a0, a1 = geo_conversion.conversion_spherique_cartesien(M)
 
     x = R*np.sin(f*t) + a0
     y = R*np.cos(f*t) + a1
