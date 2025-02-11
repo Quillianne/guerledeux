@@ -122,6 +122,7 @@ class Navigation:
 
         # Calculer la moyenne des mesures
         moyenne = np.mean(mesures, axis=0)
+        print(moyenne)
         return moyenne[2]
 
     def trigger_gesture(self):
@@ -226,7 +227,7 @@ class Navigation:
                 left_motor = np.clip(left_motor, -self.max_speed, self.max_speed)
                 right_motor = np.clip(right_motor, -self.max_speed, self.max_speed)
 
-                #self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
+                self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
 
                 #affichage de l'état
                 print("Target:", heading_to_follow, "Current:", round(current_heading, 2), 
