@@ -227,6 +227,10 @@ class Navigation:
             left_motor = base_speed - correction
             right_motor = base_speed + correction
 
+            # Clip motor speeds within valid range
+            left_motor = np.clip(left_motor, -self.max_speed, self.max_speed)
+            right_motor = np.clip(right_motor, -self.max_speed, self.max_speed)
+
             # Send speed commands to motors
             self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
             
