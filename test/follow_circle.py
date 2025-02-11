@@ -5,7 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from utils import geo_conversion
 
-def circle_trajectory(t, R = 10, f = 450 M = [48.1996457, -3.0152944]):
+def circle_trajectory(t, R = 10, f = 450, M = [48.1996457, -3.0152944]):
     """
     dessine un cercle de rayon R autour du point M
     """
