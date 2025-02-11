@@ -4,8 +4,10 @@ import numpy as np
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from utils import geo_conversion
+from settings import POINT_BOUEE, FREQUENCE_CIRCLE, RAYON_CIRCLE
 
-def circle_trajectory(t, R = 10, f = 450 M = [48.1996457, -3.0152944]):
+
+def circle_trajectory(t, R = RAYON_CIRCLE, f = FREQUENCE_CIRCLE, M = POINT_BOUEE):  #fonction qui retourne le point a rejoindre à l'instant t (cartesien)
     """
     dessine un cercle de rayon R autour du point M
     """
@@ -16,7 +18,7 @@ def circle_trajectory(t, R = 10, f = 450 M = [48.1996457, -3.0152944]):
 
     return x,y
 
-def circle_trajectory_dot(t, R = 10):  #fonction qui retourne la dérivé du point a rejoindre à l'instant t (cartesien)    
+def circle_trajectory_dot(t, f = FREQUENCE_CIRCLE, R = RAYON_CIRCLE):  #fonction qui retourne la dérivé du point a rejoindre à l'instant t (cartesien)    
     """
     fonction qui retourne la dérivée du cercle
     """
