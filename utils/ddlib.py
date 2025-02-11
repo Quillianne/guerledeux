@@ -230,7 +230,7 @@ class Navigation:
                 self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
 
                 #affichage de l'état
-                print("Target:", heading_to_follow, "Current:", round(current_heading, 2), 
+                print("Vitesse moteur:", round(distance_correction*base_speed,2), "D_Corr:", round(distance_correction, 2), 
                       "Error:", round(error, 2), "Distance:", round(distance, 2), end="\r")
                 time.sleep(self.dt)
                 
