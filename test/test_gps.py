@@ -13,23 +13,14 @@ GYRO_CALIBRATION_FILE = os.path.join(os.path.dirname(__file__), '..',"gyro_calib
 print(GYRO_CALIBRATION_FILE)
 
 
-
 # gps = ddlib.GPS()
 # while True:
-#     time.sleep(1)
+#     time.sleep(0.05)
 #     gps.get_coords()
 #     print("coordonnées gps :", gps.gps_position,
 #           "  ||  coordonnées cartésiennes :", gps.x, gps.y, end="\r")
     
 
-
-imu = ddlib.IMU()
-gps = ddlib.GPS()
-while True:
-    time.sleep(0.05)
-    gps.get_coords()
-    print("coordonnées gps :", gps.gps_position,
-          "  ||  coordonnées cartésiennes :", gps.x, gps.y, end="\r")
 arduino = arddrv.ArduinoIO()
 
 Nav = ddlib.Navigation(imu, gps, arduino)
