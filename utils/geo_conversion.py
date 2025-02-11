@@ -42,6 +42,64 @@ def deg_to_rad(deg):
     """Convertit les degrés en radians."""
     return deg * np.pi / 180
 
+def rad_to_deg(rad):
+    return rad * 180.0 / np.pi
+
+def conversion_cartesien_spherique(coord_xy, lat_m=POINT_BASE[0], long_m=POINT_BASE[1], rho=RHO):
+    """
+    Inverse de conversion_spherique_cartesien :
+    À partir des coordonnées locales (X, Y),
+    retourne (latitude, longitude) en degrés du point correspondant.
+    
+    :param coord_xy: tuple (X, Y) en coordonnées locales
+    :param lat_m, long_m: coord. du point de référence (en degrés)
+    :param rho: rayon (ou grand rayon) de la sphère utilisée
+    :return: (latitude, longitude) en degrés du point P
+    """
+
+    X, Y = coord_xy
+
+    # Convertir la référence (lat_m, long_m) en radians
+    lat_m_rad = deg_to_rad(lat_m)
+    long_m_rad = deg_to_rad(long_m)
+
+    # Coordonnées cartésiennes (x_m, y_m) du point M
+    x_m = rho * np.cos(lat_m_rad) * np.cos(long_m_rad)
+    y_m = rho * np.cos(lat_m_rad) * np.sin(long_m_rad)
+
+    # Retrouver (x_p, y_p) du point P
+    # Rappel : X = x_m - x_p ; Y = y_p - y_m
+    x_p = x_m - X
+    y_p = y_m + Y
+
+    # Calcul de la longitude (radians)
+    long_p_rad = np.arctan2(y_p, x_p)
+
+    # Calcul de la latitude (radians) via cos(lat_p)
+    # cos(lat_p) = sqrt(x_p^2 + y_p^2) / rho
+    r_xy = np.sqrt(x_p**2 + y_p**2)
+    cos_lat_p = r_xy / rho
+
+    # On borne cos_lat_p à 1 (dans le cas d'imprécisions numériques >1)
+    if cos_lat_p > 1.0:
+        cos_lat_p = 1.0
+    elif cos_lat_p < -1.0:
+        cos_lat_p = -1.0
+
+    lat_p_rad = np.arccos(cos_lat_p)
+    
+    # Choix du signe pour lat_p :
+    # hypothèse : on reste dans le même hémisphère que lat_m
+    # Si lat_m est négatif, on rend lat_p négatif, etc.
+    if lat_m_rad < 0:
+        lat_p_rad = -lat_p_rad
+
+    # Conversion en degrés
+    lat_p_deg  = rad_to_deg(lat_p_rad)
+    long_p_deg = rad_to_deg(long_p_rad)
+
+    return (lat_p_deg, long_p_deg)
+
 def conversion_spherique_cartesien(point, lat_m=POINT_BASE[0], long_m=POINT_BASE[1], rho=RHO):
     """
     Convertit les coordonnées GPS (latitude, longitude) en coordonnées cartésiennes locales

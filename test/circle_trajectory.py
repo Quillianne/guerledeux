@@ -26,3 +26,7 @@ def circle_trajectory_dot(t, f = FREQUENCE_CIRCLE, R = RAYON_CIRCLE):  #fonction
     y_dot = -R*f*np.sin(f*t)
 
     return x_dot, y_dot
+
+if __name__ == "__main__":
+    print(circle_trajectory(0))
+    print(geo_conversion.conversion_cartesien_spherique(circle_trajectory(0)))
