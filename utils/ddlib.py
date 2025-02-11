@@ -113,7 +113,7 @@ class Navigation:
         _, _, yaw = self.imu.get_euler_angles()
         return np.degrees(yaw)  # Convert to degrees
 
-    def follow_cap(self, target_cap, duration):
+    def follow_heading(self, target_heading, duration):
         """
         Make the boat follow the desired heading for a given duration.
 
@@ -127,7 +127,7 @@ class Navigation:
             current_heading = self.get_current_heading()
             
             # Compute heading error
-            error = target_cap - current_heading
+            error = target_heading - current_heading
             error = (error + 180) % 360 - 180  # Keep error within [-180, 180] degrees
             
             # Compute correction using proportional control
@@ -146,7 +146,7 @@ class Navigation:
             self.arduino.send_arduino_cmd_motor(left_motor, right_motor)
 
             # Debugging output
-            print("Target:", target_cap, "Current:", round(current_heading, 2), 
+            print("Target:", target_heading, "Current:", round(current_heading, 2), 
                   "Error:", round(error, 2), end="\r")
 
             time.sleep(self.imu.dt)  # Update rate of 10 Hz
@@ -159,23 +159,28 @@ class Navigation:
 
 class GPS():
     def __init__(self):
-        gps = gpsdrv.GpsIO()
-        gps.set_filter_speed("0")
-
-        last_gps_data = (48.1996872, -3.0153766)
+        self.gps = gpsdrv.GpsIO()
+        self.gps.set_filter_speed("0")
+        self.gps_position = None
+        self.x = None
+        self.y = None
 
     def get_gps(self):
         """Read GPS data from the serial port."""
         gll_ok, gll_data = self.gps.read_gll_non_blocking()
         if gll_ok:
-            return gll_data
-        return self.last_gps_data
+            #print(gll_data)
+            latitude = geo.convert_to_decimal_degrees(gll_data[0], gll_data[1])
+            longitude = geo.convert_to_decimal_degrees(gll_data[2], gll_data[3])
+            self.gps_position = (latitude, longitude)
+        return self.gps_position
     
     def get_coords(self):
         """returns the current cartesian coordinates (x,y) of the boat"""
         point = self.get_gps()
-        x, y = geo.conversion_spherique_cartesien(point, lat_m=48.1996872, long_m=-3.0153766, rho=6371000)
-        return x, y
+        if point != None:
+            self.x, self.y = geo.conversion_spherique_cartesien(point, lat_m=48.1996872, long_m=-3.0153766, rho=6371000)
+        return self.x, self.y
 
 
 
