@@ -13,8 +13,8 @@ def circle_trajectory(t, R = RAYON_CIRCLE, f = FREQUENCE_CIRCLE, M = POINT_BOUEE
     """
     a0, a1 = geo_conversion.conversion_spherique_cartesien(M)
 
-    x = R*np.sin(f*t) + a0
-    y = R*np.cos(f*t) + a1
+    x = R*np.sin(2*np.pi*f*t) + a0
+    y = R*np.cos(2*np.pi*f*t) + a1
 
     return x,y
 
@@ -22,8 +22,8 @@ def circle_trajectory_dot(t, f = FREQUENCE_CIRCLE, R = RAYON_CIRCLE):  #fonction
     """
     fonction qui retourne la dérivée du cercle
     """
-    x_dot = R*f*np.cos(f*t)
-    y_dot = -R*f*np.sin(f*t)
+    x_dot = 2*np.pi*R*f*np.cos(f*t)
+    y_dot = -2*np.pi*R*f*np.sin(f*t)
 
     return x_dot, y_dot
 
