@@ -122,7 +122,6 @@ class Navigation:
 
         # Calculer la moyenne des mesures
         moyenne = np.mean(mesures, axis=0)
-        print(moyenne)
         return moyenne[2]
 
     def trigger_gesture(self):
