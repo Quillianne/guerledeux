@@ -124,3 +124,21 @@ def conversion_spherique_cartesien(point, lat_m=POINT_BASE[0], long_m=POINT_BASE
     y = y_p - y_m
 
     return -x, y
+
+def gpx_to_cartesian(gpx_file):
+    """
+    Converts a GPX file to a .npy file.
+
+    :param gpx_file: The name of the input GPX file.
+    :return: A list of cartesian coordinates (x, y).
+    """
+    gpx = open(gpx_file, "r", encoding="utf-8")
+    coords = []
+    for line in gpx:
+        if "<trkpt" in line:
+            lat = float(line.split('lat="')[1].split('" lon=')[0])
+            lon = float(line.split('lon="')[1].split('"></trkpt>')[0])
+            x, y = conversion_spherique_cartesien((lat, lon))
+            coords.append((x, y))
+    
+    return coords

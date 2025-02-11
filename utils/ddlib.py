@@ -292,7 +292,7 @@ class Navigation:
         # Stop the motors after duration
         self.arduino_driver.send_arduino_cmd_motor(0, 0)
 
-        
+
 
 
 class GPS():
