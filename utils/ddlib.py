@@ -215,7 +215,7 @@ class Navigation:
                 correction = self.Kp * error
 
                 #apliquer une correction proportionelle à la distance de la cible 
-                reference_distance = 15
+                reference_distance = 5
                 distance_correction = np.tanh(distance/reference_distance)
                 #distance_correction = 1
                 
