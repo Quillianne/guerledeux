@@ -197,8 +197,10 @@ class Navigation:
         while t < duration:
             t = time.time() - t0
             x, y = f(t) #pos de la cible
+            print("x: ", x, " et y: ", y)
             vx, vy = fdot(t) #v de la cible
             px, py = self.gps.get_coords() #pos du bateau
+            print("px: ", px, " et py: ", py)
             if px != None and py != None:
                 #calcul du cap à viser
                 vector_to_target = np.array([x, y]) - np.array([px, py])
@@ -229,8 +231,8 @@ class Navigation:
                 self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
 
                 #affichage de l'état
-                print("Target:", heading_to_follow, "Current:", round(current_heading, 2), 
-                      "Error:", round(error, 2), "Distance:", round(distance, 2), end="\r")
+                #print("Target:", heading_to_follow, "Current:", round(current_heading, 2), 
+                #      "Error:", round(error, 2), "Distance:", round(distance, 2), end="\r")
                 time.sleep(self.dt)
                 
         self.arduino_driver.send_arduino_cmd_motor(0, 0)
