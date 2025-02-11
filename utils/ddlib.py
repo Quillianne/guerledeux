@@ -185,7 +185,7 @@ class Navigation:
         self.arduino_driver.send_arduino_cmd_motor(0, 0)
         print("Navigation complete. Motors stopped.")
     
-    def follow_trajectory(self, f, fdot, duration = 60):
+    def follow_trajectory(self, f, fdot, duration = 300):
         """
         Make the boat follow a trajectory defined by a function f(t) and its derivative fdot(t).
         
@@ -219,7 +219,7 @@ class Navigation:
                 distance_correction = np.tanh(distance/reference_distance)
                 
                 #envoyer la vitesse
-                base_speed = self.max_speed * 0.5
+                base_speed = self.max_speed * 0.9
                 left_motor = distance_correction*base_speed + correction
                 right_motor = distance_correction*base_speed - correction
 
