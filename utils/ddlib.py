@@ -162,12 +162,13 @@ class GPS():
         gps = gpsdrv.GpsIO()
         gps.set_filter_speed("0")
 
-        last_gps_data = (48.1996872, -3.0153766)
+        last_gps_data = (48.1996872, -3.0153766)    # point M du ponton pour référence
 
     def get_gps(self):
         """Read GPS data from the serial port."""
         gll_ok, gll_data = self.gps.read_gll_non_blocking()
         if gll_ok:
+            self.last_gps_data = gll_data
             return gll_data
         return self.last_gps_data
     
