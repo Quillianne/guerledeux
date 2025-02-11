@@ -302,6 +302,7 @@ class GPS():
         self.debug = debug
         self.x = None
         self.y = None
+        self.gps_history = []
 
     def get_gps(self):
         """Read GPS data from the serial port."""
@@ -313,14 +314,43 @@ class GPS():
             longitude = geo.convert_to_decimal_degrees(gll_data[2], gll_data[3])
             if latitude != 0 and longitude != 0:
                 self.gps_position = (latitude, longitude)
+                self.gps_history.append(self.gps_position)
         return self.gps_position
     
     def get_coords(self):
         """returns the current cartesian coordinates (x,y) of the boat"""
         point = self.get_gps()
         if point != None:
-            self.x, self.y = geo.conversion_spherique_cartesien(point, lat_m=48.1996872, long_m=-3.0153766, rho=6371000)
+            self.x, self.y = geo.conversion_spherique_cartesien(point)
         return self.x, self.y
+    
+    def export_gpx(self, filename="output.gpx"):
+        """
+        Exports the recorded GPS history to a GPX file.
+
+        :param filename: The name/path of the output GPX file.
+        """
+        # Minimal GPX file header
+        gpx_header = """<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="GPS Python Class" xmlns="http://www.topografix.com/GPX/1/1">
+  <trk>
+    <name>GPS Track</name>
+    <trkseg>
+"""
+        # Minimal GPX file footer
+        gpx_footer = """    </trkseg>
+  </trk>
+</gpx>
+"""
+
+        # Write header
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(gpx_header)
+            # Write each GPS point
+            for lat, lon in self.gps_history:
+                f.write(f'      <trkpt lat="{lat}" lon="{lon}"></trkpt>\n')
+            # Write footer
+            f.write(gpx_footer)
 
 
 
