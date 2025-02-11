@@ -127,12 +127,12 @@ class Navigation:
 
     def trigger_gesture(self):
         acc_z = self.get_z_acc_mean()
-        while acc_z > 2800:
+        while acc_z < -2800:
             self.arduino_driver.send_arduino_cmd_motor(0, 0)
             acc_z = self.get_z_acc_mean()
             #print(acc_z)
 
-        while acc_z < 3500:
+        while acc_z > -3500:
             self.arduino_driver.send_arduino_cmd_motor(100, 100)
             acc_z = self.get_z_acc_mean()
             #print(acc_z)
