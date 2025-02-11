@@ -172,7 +172,8 @@ class GPS():
             #print(gll_data)
             latitude = geo.convert_to_decimal_degrees(gll_data[0], gll_data[1])
             longitude = geo.convert_to_decimal_degrees(gll_data[2], gll_data[3])
-            self.gps_position = (latitude, longitude)
+            if latitude != 0 and longitude != 0:
+                self.gps_position = (latitude, longitude)
         return self.gps_position
     
     def get_coords(self):
