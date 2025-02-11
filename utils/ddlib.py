@@ -94,7 +94,7 @@ class IMU:
 
 
 class Navigation:
-    def __init__(self, imu, arduino, Kp=1.0, max_speed=100):
+    def __init__(self, imu, arduino_driver, Kp=1.0, max_speed=100):
         """
         Initialize Navigation system.
         
@@ -104,7 +104,8 @@ class Navigation:
         :param max_speed: Maximum speed for the motors.
         """
         self.imu = imu
-        self.arduino = arduino
+        self.imu_driver = self.imu.imu_driver
+        self.arduino_driver = arduino_driver
         self.Kp = Kp  # Proportional gain
         self.max_speed = max_speed  # Maximum motor speed
 
@@ -114,7 +115,7 @@ class Navigation:
 
         # Capturer les données pendant 'duree' secondes
         while time.time() - start_time < duree:
-            mesures.append(self.imu.imu_driver.read_accel_raw())
+            mesures.append(self.imu_driver.read_accel_raw())
 
         # Calculer la moyenne des mesures
         moyenne = np.mean(mesures, axis=0)
@@ -123,16 +124,16 @@ class Navigation:
     def trigger_gesture(self):
 
         while acc_z > 2800:
-            self.arduino.send_arduino_cmd_motor(0, 0)
+            self.arduino_driver.send_arduino_cmd_motor(0, 0)
             acc_z = self.get_z_acc_mean(imu)
             #print(acc_z)
 
         while acc_z < 3500:
-            self.arduino.send_arduino_cmd_motor(100, 100)
+            self.arduino_driver.send_arduino_cmd_motor(100, 100)
             acc_z = self.get_z_acc_mean(imu)
             #print(acc_z)
 
-        self.arduino.send_arduino_cmd_motor(0, 0)
+        self.arduino_driver.send_arduino_cmd_motor(0, 0)
 
     def get_current_heading(self):
         """Get the current heading (yaw angle) from the IMU."""
@@ -169,7 +170,7 @@ class Navigation:
             right_motor = np.clip(right_motor, -self.max_speed, self.max_speed)
 
             # Send speed commands to motors
-            self.arduino.send_arduino_cmd_motor(left_motor, right_motor)
+            self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
 
             # Debugging output
             print("Target:", target_heading, "Current:", round(current_heading, 2), 
@@ -178,7 +179,7 @@ class Navigation:
             time.sleep(self.imu.dt)  # Update rate of 10 Hz
 
         # Stop the motors after duration
-        self.arduino.send_arduino_cmd_motor(0, 0)
+        self.arduino_driver.send_arduino_cmd_motor(0, 0)
         print("Navigation complete. Motors stopped.")
 
 
