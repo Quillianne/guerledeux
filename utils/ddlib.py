@@ -181,7 +181,51 @@ class Navigation:
         # Stop the motors after duration
         self.arduino_driver.send_arduino_cmd_motor(0, 0)
         print("Navigation complete. Motors stopped.")
+    
+    def follow_trajectory(self, f, fdot, duration = 60):
+        """
+        Make the boat follow a trajectory defined by a function f(t) and its derivative fdot(t).
+        
+        :param f: Function that returns the desired position at time t.
+        :param fdot: Function that returns the desired velocity at time t.
+        """
+        t = 0
+        t0 = time.time()
+        while t < duration:
+            t = time.time() - t0
+            x, y = f(t) #pos de la cible
+            vx, vy = fdot(t) #v de la cible
+            px, py = self.gps.get_coords() #pos du bateau
+            if px == None or py == None:
+                #calcul du cap à viser
+                vector_to_target = np.array([x, y]) - np.array([px, py])
+                distance = np.linalg.norm(vector_to_target)
 
+                heading_to_follow = np.arctan2(vector_to_target[1], vector_to_target[0])*180/np.pi
+                current_heading = self.get_current_heading()
+
+                error = heading_to_follow - current_heading
+                if error > 180:
+                    error -= 360
+                elif error < -180:
+                    error += 360
+                correction = self.Kp * error
+
+                #apliquer une correction proportionelle à la distance de la cible 
+                reference_distance = 5
+                distance_correction = np.tanh(distance/reference_distance)
+                
+                #envoyer la vitesse
+                speed = 150
+                spdleft = distance_correction*speed + correction
+                spdright = distance_correction*speed - correction
+                self.arduino_driver.send_arduino_cmd_motor(spdleft, spdright)
+
+                #affichage de l'état
+                print("Target:", heading_to_follow, "Current:", round(current_heading, 2), 
+                      "Error:", round(error, 2), "Distance:", round(distance, 2), end="\r")
+        self.arduino_driver.send_arduino_cmd_motor(0, 0)
+        print("Fin de chantier")
 
 class GPS():
     def __init__(self, debug = False):
