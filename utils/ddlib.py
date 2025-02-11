@@ -156,7 +156,6 @@ class Navigation:
         print("Navigation complete. Motors stopped.")
 
 
-
 class GPS():
     def __init__(self):
         self.gps = gpsdrv.GpsIO()
