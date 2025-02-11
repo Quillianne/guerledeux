@@ -204,7 +204,7 @@ class Navigation:
                 vector_to_target = np.array([x, y]) - np.array([px, py])
                 distance = np.linalg.norm(vector_to_target)
 
-                heading_to_follow = np.arctan2(vector_to_target[1], vector_to_target[0])*180/np.pi
+                heading_to_follow = -np.arctan2(vector_to_target[1], vector_to_target[0])*180/np.pi
                 current_heading = self.get_current_heading()
 
                 error = current_heading - heading_to_follow
@@ -226,7 +226,7 @@ class Navigation:
                 left_motor = np.clip(left_motor, -self.max_speed, self.max_speed)
                 right_motor = np.clip(right_motor, -self.max_speed, self.max_speed)
 
-                self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
+                #self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
 
                 #affichage de l'état
                 print("Target:", heading_to_follow, "Current:", round(current_heading, 2), 
