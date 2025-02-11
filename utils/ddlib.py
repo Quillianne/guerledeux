@@ -158,10 +158,11 @@ class Navigation:
 
 
 class GPS():
-    def __init__(self):
+    def __init__(self, debug = False):
         self.gps = gpsdrv.GpsIO()
         self.gps.set_filter_speed("0")
         self.gps_position = None
+        self.debug = debug
         self.x = None
         self.y = None
 
@@ -169,7 +170,8 @@ class GPS():
         """Read GPS data from the serial port."""
         gll_ok, gll_data = self.gps.read_gll_non_blocking()
         if gll_ok:
-            #print(gll_data)
+            if self.debug == True:
+                print("Debug gll: ", gll_data)
             latitude = geo.convert_to_decimal_degrees(gll_data[0], gll_data[1])
             longitude = geo.convert_to_decimal_degrees(gll_data[2], gll_data[3])
             if latitude != 0 and longitude != 0:
