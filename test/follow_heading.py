@@ -16,7 +16,7 @@ imu = IMU(dt = DT)
 arduino = arddrv.ArduinoIO()
 
 # Création de l'instance de navigation
-navigation = Navigation(imu, arduino, Kp=1.5, max_speed=240)
+navigation = Navigation(imu, arduino, Kp=1.5, max_speed=250)
 
 # Définition du cap cible (en degrés)
 target_heading = 90  # Exemple : maintenir un cap de 90° (Est)
