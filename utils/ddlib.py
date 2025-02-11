@@ -215,8 +215,9 @@ class Navigation:
                 correction = self.Kp * error
 
                 #apliquer une correction proportionelle à la distance de la cible 
-                reference_distance = 5
+                reference_distance = 15
                 distance_correction = np.tanh(distance/reference_distance)
+                #distance_correction = 1
                 
                 #envoyer la vitesse
                 base_speed = self.max_speed * 0.9
