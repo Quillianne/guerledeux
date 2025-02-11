@@ -13,8 +13,6 @@ print(GYRO_CALIBRATION_FILE)
 
 
 
-
-
 gps = ddlib.GPS()
 while True:
     time.sleep(1)
