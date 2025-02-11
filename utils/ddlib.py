@@ -207,7 +207,7 @@ class Navigation:
                 heading_to_follow = np.arctan2(vector_to_target[1], vector_to_target[0])*180/np.pi
                 current_heading = self.get_current_heading()
 
-                error = heading_to_follow - current_heading
+                error = current_heading - heading_to_follow
                 if error > 180:
                     error -= 360
                 elif error < -180:
