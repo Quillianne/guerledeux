@@ -106,6 +106,7 @@ class Navigation:
         """
         self.imu = imu
         self.imu_driver = self.imu.imu_driver
+        self.dt = self.imu.dt
         self.gps = gps
         self.arduino_driver = arduino_driver
         self.Kp = Kp  # Proportional gain
@@ -178,7 +179,7 @@ class Navigation:
             print("Target:", target_heading, "Current:", round(current_heading, 2), 
                   "Error:", round(error, 2), end="\r")
 
-            time.sleep(self.imu.dt)  # Update rate of 10 Hz
+            time.sleep(self.dt)  # Update rate of 10 Hz
 
         # Stop the motors after duration
         self.arduino_driver.send_arduino_cmd_motor(0, 0)
@@ -218,14 +219,20 @@ class Navigation:
                 distance_correction = np.tanh(distance/reference_distance)
                 
                 #envoyer la vitesse
-                speed = 150
-                spdleft = distance_correction*speed + correction
-                spdright = distance_correction*speed - correction
-                self.arduino_driver.send_arduino_cmd_motor(spdleft, spdright)
+                base_speed = self.max_speed * 0.5
+                left_motor = distance_correction*base_speed + correction
+                right_motor = distance_correction*base_speed - correction
+
+                left_motor = np.clip(left_motor, -self.max_speed, self.max_speed)
+                right_motor = np.clip(right_motor, -self.max_speed, self.max_speed)
+
+                self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
 
                 #affichage de l'état
                 print("Target:", heading_to_follow, "Current:", round(current_heading, 2), 
                       "Error:", round(error, 2), "Distance:", round(distance, 2), end="\r")
+                time.sleep(self.dt)
+                
         self.arduino_driver.send_arduino_cmd_motor(0, 0)
         print("Fin de chantier")
 
