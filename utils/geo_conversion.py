@@ -1,5 +1,8 @@
 import numpy as np
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
+from settings import POINT_BASE, RHO
 def convert_to_decimal_degrees(ddmmss, direction):
     """
     Convertit une latitude/longitude au format DDMM.MMMM 
@@ -39,7 +42,7 @@ def deg_to_rad(deg):
     """Convertit les degrés en radians."""
     return deg * np.pi / 180
 
-def conversion_spherique_cartesien(point, lat_m=48.1996872, long_m=-3.0153766, rho=6371000):
+def conversion_spherique_cartesien(point, lat_m=POINT_BASE[0], long_m=POINT_BASE[1], rho=RHO):
     """
     Convertit les coordonnées GPS (latitude, longitude) en coordonnées cartésiennes locales
     par rapport à un point M défini par lat_m et long_m, en ne retournant que x et y.
