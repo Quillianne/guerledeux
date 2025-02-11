@@ -15,7 +15,7 @@ from settings import CALIBRATION_FILE, GYRO_CALIBRATION_FILE
 
 class IMU:
     def __init__(self, calibration_file=CALIBRATION_FILE, gyro_calib_file=GYRO_CALIBRATION_FILE, dt = 0.01):
-        self.imu = imudrv.Imu9IO()
+        self.imu_driver = imudrv.Imu9IO()
         self.A_mag = None
         self.b_mag = None
         self.A_acc = None
@@ -51,8 +51,8 @@ class IMU:
 
     def get_corrected_measurements(self):
         """Retourne les mesures corrigées du magnétomètre et de l'accéléromètre."""
-        mag_raw = np.array(self.imu.read_mag_raw()).reshape(3, 1)
-        acc_raw = np.array(self.imu.read_accel_raw()).reshape(3, 1)
+        mag_raw = np.array(self.imu_driver.read_mag_raw()).reshape(3, 1)
+        acc_raw = np.array(self.imu_driver.read_accel_raw()).reshape(3, 1)
 
         mag_corrected = np.linalg.inv(self.A_mag) @ (mag_raw + self.b_mag)
         acc_corrected = np.linalg.inv(self.A_acc) @ (acc_raw + self.b_acc)
@@ -61,7 +61,7 @@ class IMU:
 
     def get_corrected_gyro(self):
         """Retourne les mesures du gyroscope corrigées de l'offset."""
-        gyro_raw = np.array(self.imu.read_gyro_raw()).reshape(3, 1)
+        gyro_raw = np.array(self.imu_driver.read_gyro_raw()).reshape(3, 1)
         gyro_corrected = gyro_raw - self.gyro_offset
         return gyro_corrected
 
@@ -107,6 +107,32 @@ class Navigation:
         self.arduino = arduino
         self.Kp = Kp  # Proportional gain
         self.max_speed = max_speed  # Maximum motor speed
+
+    def get_z_acc_mean(self, duree = 0.5):
+        start_time = time.time()
+        mesures = []
+
+        # Capturer les données pendant 'duree' secondes
+        while time.time() - start_time < duree:
+            mesures.append(self.imu.imu_driver.read_accel_raw())
+
+        # Calculer la moyenne des mesures
+        moyenne = np.mean(mesures, axis=0)
+        return moyenne[2]
+
+    def trigger_gesture(self):
+
+        while acc_z > 2800:
+            self.arduino.send_arduino_cmd_motor(0, 0)
+            acc_z = self.get_z_acc_mean(imu)
+            #print(acc_z)
+
+        while acc_z < 3500:
+            self.arduino.send_arduino_cmd_motor(100, 100)
+            acc_z = self.get_z_acc_mean(imu)
+            #print(acc_z)
+
+        self.arduino.send_arduino_cmd_motor(0, 0)
 
     def get_current_heading(self):
         """Get the current heading (yaw angle) from the IMU."""
@@ -157,10 +183,11 @@ class Navigation:
 
 
 class GPS():
-    def __init__(self):
+    def __init__(self, debug = False):
         self.gps = gpsdrv.GpsIO()
         self.gps.set_filter_speed("0")
         self.gps_position = None
+        self.debug = debug
         self.x = None
         self.y = None
 
@@ -168,10 +195,12 @@ class GPS():
         """Read GPS data from the serial port."""
         gll_ok, gll_data = self.gps.read_gll_non_blocking()
         if gll_ok:
-            #print(gll_data)
+            if self.debug == True:
+                print("Debug gll: ", gll_data)
             latitude = geo.convert_to_decimal_degrees(gll_data[0], gll_data[1])
             longitude = geo.convert_to_decimal_degrees(gll_data[2], gll_data[3])
-            self.gps_position = (latitude, longitude)
+            if latitude != 0 and longitude != 0:
+                self.gps_position = (latitude, longitude)
         return self.gps_position
     
     def get_coords(self):
