@@ -417,6 +417,7 @@ class Client:
     
     def serv_decode(self):
         decoded_data = self.last_data.split(";")
+        print("decoded_data :", decoded_data)
         return decoded_data
 
 
