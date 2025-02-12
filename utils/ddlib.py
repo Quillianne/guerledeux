@@ -393,6 +393,7 @@ class Client:
         self.host = server_ip
         self.port = port
         self.client = None
+        self.connect()
 
     def connect(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
