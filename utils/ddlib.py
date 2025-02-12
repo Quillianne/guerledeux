@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import datetime
+import socket
 
 from utils.roblib import *  # Importation des fonctions nécessaires
 import utils.geo_conversion as geo
@@ -380,23 +381,31 @@ class Navigation:
 
 
 class Client:
-    def __init__(self, host="localhost", port=8080):
-        self.host = host
+    def __init__(self, server_ip, port=5000):     
+        self.host = server_ip
         self.port = port
         self.client = None
 
     def connect(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((self.host, self.port))
+        print("connected DDGOAT to server :", self.host)
 
     def send(self, data):
-        self.client.sendall(data.encode())
+        pass
 
     def receive(self):
-        return self.client.recv(1024).decode()
+        data = self.client.recv(1024).decode()
+        if not data :
+            print("server ", self.host, ": no data received")
+            return None
 
-    def close(self):
-        self.client.close() 
+        print("received :", data, " from server :", self.host)
+        return data
+
+    def __del__(self):
+        if self.client:
+            self.client.close()
 
 
 # Exemple d'utilisation
