@@ -11,6 +11,8 @@ import utils.geo_conversion as geo
 
 # Ajouter le chemin vers le dossier des drivers
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'drivers-ddboat-v2'))
+# Ajouter le chemin vers le dossier de log
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'log'))
 import imu9_driver_v2 as imudrv
 import gps_driver_v2 as gpsdrv
 
@@ -126,7 +128,7 @@ class GPS():
             self.x, self.y = geo.conversion_spherique_cartesien(point)
         return self.x, self.y
     
-    def export_gpx(self, filename="output.gpx"):
+    def export_gpx(self, filename="log/output.gpx"):
         """
         Exports the recorded GPS history to a GPX file, including time stamps.
 
@@ -313,10 +315,9 @@ class Navigation:
                 time.sleep(self.dt)
         if stop_motor == True:        
             self.arduino_driver.send_arduino_cmd_motor(0, 0)
-        np.savez("trajectory.npz", history=self.history)
+        np.savez("log/trajectory.npz", history=self.history)
         self.history = []
         #print("Fin de chantier")
-
     
     def follow_gps(self, target_coords, cartesian=True, distance=5):
         """
@@ -361,8 +362,6 @@ class Navigation:
                 elif error < -180:
                     error += 360
                 correction = self.Kp * error
-
-
 
                 reference_distance = 5
                 distance_correction = np.tanh(distance_target/reference_distance)
@@ -415,12 +414,15 @@ class Navigation:
             time.sleep(2)
         while True:
             if target != None:
-                target_position = geo.conversion_cartesien_spherique(target)
+                target_position = geo.conversion_spherique_cartesien(target)
             current_position = np.array(self.gps.get_coords())
             distance_to_target = np.linalg.norm(current_position - target_position)
             if distance_to_target > distance:
                 self.follow_gps(target_position, cartesien=True, distance=distance)
+            else:
+                self.stay_at(target_position, cartesien=True)
             time.sleep(0.1)
+
 
 class Client:
     def __init__(self, server_ip, port=5000):     
