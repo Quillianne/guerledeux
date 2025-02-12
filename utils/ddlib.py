@@ -412,8 +412,8 @@ class Client:
             return None
 
         self.last_data = data
-        print("received :", data, " from server :", self.host)
-        print("decoded data :", self.serv_decode())
+        #print("received :", data, " from server :", self.host)
+        #print("decoded data :", self.serv_decode())
         return self.serv_decode()
     
     def serv_decode(self):
