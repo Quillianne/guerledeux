@@ -333,48 +333,47 @@ class Navigation:
         target_coords = np.array(target_coords)
 
         distance_target = np.inf
-
         while distance_target > distance:
             
             # get current gps coordinates in cartesian
             current_coords = np.array(self.gps.get_coords())
-            
-            # Compute heading to target
-            delta_coords = target_coords - current_coords
-            target_heading = -np.degrees(np.atan2(delta_coords))*180/np.pi
+            if current_coords != None:
+                # Compute heading to target
+                delta_coords = target_coords - current_coords
+                target_heading = -np.degrees(np.atan2(delta_coords))*180/np.pi
 
-            # Compute distance to target
-            distance = np.linalg.norm(delta_coords)
+                # Compute distance to target
+                distance = np.linalg.norm(delta_coords)
 
-            # get current heading
-            current_heading = self.get_current_heading()
-            
-            # Error
-            error = current_heading - target_heading
-            error = (error + 180) % 360 - 180  # Keep error within [-180, 180] degrees
-            correction = self.Kp * error
+                # get current heading
+                current_heading = self.get_current_heading()
+                
+                # Error
+                error = current_heading - target_heading
+                error = (error + 180) % 360 - 180  # Keep error within [-180, 180] degrees
+                correction = self.Kp * error
 
 
-            reference_distance = 5
-            distance_correction = np.tanh(distance/reference_distance)
+                reference_distance = 5
+                distance_correction = np.tanh(distance/reference_distance)
 
-            # Proportional command to the motors
-            base_speed = self.max_speed * 0.9
+                # Proportional command to the motors
+                base_speed = self.max_speed * 0.9
 
-            left_motor = distance_correction*base_speed + correction
-            right_motor = distance_correction*base_speed - correction
+                left_motor = distance_correction*base_speed + correction
+                right_motor = distance_correction*base_speed - correction
 
-            # Clip motor speeds within valid range
-            left_motor = np.clip(left_motor, -self.max_speed, self.max_speed)
-            right_motor = np.clip(right_motor, -self.max_speed, self.max_speed)
+                # Clip motor speeds within valid range
+                left_motor = np.clip(left_motor, -self.max_speed, self.max_speed)
+                right_motor = np.clip(right_motor, -self.max_speed, self.max_speed)
 
-            # Send speed commands to motors
-            self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
-            
+                # Send speed commands to motors
+                self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
+                
 
-            print("Vitesse moteur:", round(distance_correction*base_speed,2), "D_Corr:", round(distance_correction, 2), 
-                    "Error:", round(error, 2), "Distance:", round(distance, 2), end="\r")
-            time.sleep(self.dt)
+                print("Vitesse moteur:", round(distance_correction*base_speed,2), "D_Corr:", round(distance_correction, 2), 
+                        "Error:", round(error, 2), "Distance:", round(distance, 2), end="\r")
+                time.sleep(self.dt)
 
         # Stop the motors after duration
         self.arduino_driver.send_arduino_cmd_motor(0, 0)
