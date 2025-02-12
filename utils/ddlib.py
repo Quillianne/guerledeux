@@ -458,7 +458,7 @@ class Navigation:
                 # Proportional command to the motors
                 base_speed = self.max_speed * 0.9
 
-                if distance < 10:
+                if distance_target < 10:
                     distance_correction = 0
 
                 left_motor = distance_correction*base_speed + correction
