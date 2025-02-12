@@ -434,7 +434,7 @@ class Navigation:
 
                 current_position = np.array(self.gps.get_coords())
 
-                print("position cible :", target, "position propre :", current_position)
+                #print("position cible :", target, "position propre :", current_position)
 
                 delta_coords = target - current_position
                 target_heading = -np.degrees(np.arctan2(delta_coords[1], delta_coords[0]))
