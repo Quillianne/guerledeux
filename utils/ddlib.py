@@ -114,7 +114,7 @@ class GPS():
             if latitude != 0 and longitude != 0:
                 timestamp = datetime.datetime.now() 
                 self.gps_position = (latitude, longitude)
-                self.gps_history.append(latitude, longitude, timestamp)
+                self.gps_history.append((latitude, longitude, timestamp))
         return self.gps_position
     
     def get_coords(self):
