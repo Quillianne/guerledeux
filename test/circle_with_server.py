@@ -33,7 +33,7 @@ while duration < max_time:
     
     point_serveur = client.receive()
     print(point_serveur)
-    navigation.follow_trajectory(lambda t: circle_trajectory(t, M = point_serveur), lambda t: circle_trajectory_dot(t, M = point_serveur), 5)
+    navigation.follow_trajectory(lambda t: circle_trajectory(t, M = point_serveur), lambda t: circle_trajectory_dot(t), 5)
     duration = time.time()-t0
 
 navigation.gps.export_gpx()
