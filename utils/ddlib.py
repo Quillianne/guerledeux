@@ -405,17 +405,24 @@ class Navigation:
         """
         This function allows the boat to follow another boat
         """
-        current_position = np.array(self.gps.get_coords())
         ip = "172.20.25.2" + str(boat)
         client_boat = Client(ip, port)
         target = None
+        current_position = np.array(self.gps.get_coords())
+        while current_position == None:
+            current_position = np.array(self.gps.get_coords())
+            time.sleep(2)
+        print("position propre bien recuperee") 
         while target == None:
             target = client_boat.receive()
             time.sleep(2)
+        print("position cible bien recuperee")
         while True:
+            target_position = target
             if target != None:
                 target_position = geo.conversion_spherique_cartesien(target)
-            current_position = np.array(self.gps.get_coords())
+            if self.gps.get_coords() != None:
+                current_position = np.array(self.gps.get_coords())
             distance_to_target = np.linalg.norm(current_position - target_position)
             if distance_to_target > distance:
                 self.follow_gps(target_position, cartesien=True, distance=distance)
