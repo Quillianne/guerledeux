@@ -29,7 +29,7 @@ client = ddlib.Client("172.20.25.217", port=5000)
 point_serveur = None
 while point_serveur == None:
     point_serveur = client.receive()
-    
+
 print("demarrage suivi de trajectoire")
 
 while duration < max_time:
@@ -38,7 +38,7 @@ while duration < max_time:
     if get_point != None:
         point_serveur = get_point
     else:
-        print("Pas de point récupéré")
+        print("Pas de point récupéré: ", duration)
     navigation.follow_trajectory(lambda t: circle_trajectory(t, M = point_serveur), lambda t: circle_trajectory_dot(t), duration = 5, stop_motor=False)
     duration = time.time()-t0
 
