@@ -22,6 +22,14 @@ gps = ddlib.GPS()
 # Création de l'instance de navigation
 navigation = ddlib.Navigation(imu, gps, arduino, Kp=1, max_speed=240)
 
-print("demarrage du suivi de file")
-navigation.follow_boat(217)
+
+
+if __name__ == '__main__':
+    if len(sys.argv) > 1:
+        number = int(sys.argv[1])
+    else:
+        number = 217
+
+print("On suit le bateau ", number)
+navigation.follow_boat(number)
 print("fin suivi de bateau")
