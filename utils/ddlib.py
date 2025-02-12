@@ -417,7 +417,9 @@ class Client:
         return self.serv_decode()
     
     def serv_decode(self):
+        """returns the last data received from the server to the gps format"""
         decoded_data = self.last_data.split(";")
+        decoded_data = (geo.convert_to_decimal_degrees(decoded_data[0], decoded_data[1][0]), geo.convert_to_decimal_degrees(decoded_data[2], decoded_data[3][0]))
         return decoded_data
 
 
