@@ -395,6 +395,8 @@ class Client:
         self.client = None
         self.connect()
 
+        self.last_data = None
+
     def connect(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((self.host, self.port))
@@ -407,10 +409,17 @@ class Client:
         data = self.client.recv(1024).decode()
         if not data :
             print("server ", self.host, ": no data received")
-            return None
+            self.last_data = data
+            return self.serv_decode()
 
         print("received :", data, " from server :", self.host)
         return data
+    
+    def serv_decode(self):
+        decoded_data = self.last_data.split(";")
+        return decoded_data
+
+
 
     def __del__(self):
         if self.client:
