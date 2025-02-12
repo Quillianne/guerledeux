@@ -412,16 +412,16 @@ class Navigation:
 
         while current_position[0] == None or current_position[1] == None:
             current_position = np.array(self.gps.get_coords())
-            print(current_position)
-            time.sleep(2)
+            #print(current_position)
+            time.sleep(0.1)
 
         print("position propre bien recuperee") 
 
         while target == None:
             target = client_boat.receive()
             print(target)
-            time_target_acquired = time.time()
-            time.sleep(2)
+            #time_target_acquired = time.time()
+            time.sleep(1)
 
         print("position cible bien recuperee")
 
