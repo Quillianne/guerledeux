@@ -409,27 +409,70 @@ class Navigation:
         client_boat = Client(ip, port)
         target = None
         current_position = np.array(self.gps.get_coords())
-        while current_position == None:
+
+        while current_position[0] == None or current_position[1] == None:
             current_position = np.array(self.gps.get_coords())
             time.sleep(2)
+
         print("position propre bien recuperee") 
+
         while target == None:
             target = client_boat.receive()
+            time_target_acquired = time.time()
             time.sleep(2)
+
         print("position cible bien recuperee")
+
         while True:
-            target_position = target
-            if target != None:
-                target_position = geo.conversion_spherique_cartesien(target)
-            if self.gps.get_coords() != None:
+            if time_target_acquired - time.time() > 2:
+                target = client_boat.receive() or target
+                time_target_acquired = time.time()
+
+            if self.gps.get_coords()[0] != None and self.gps.get_coords()[1] != None and target != None:
+
                 current_position = np.array(self.gps.get_coords())
-            print("position cible :", target_position, "position propre :", current_position)
-            distance_to_target = np.linalg.norm(current_position - target_position)
-            if distance_to_target > distance:
-                self.follow_gps(target_position, cartesien=True, distance=distance)
-            else:
-                self.stay_at(target_position, cartesien=True)
-            time.sleep(0.1)
+
+                print("position cible :", target, "position propre :", current_position)
+
+                delta_coords = target - current_position
+                target_heading = -np.degrees(np.arctan2(delta_coords[1], delta_coords[0]))
+                distance_target = np.linalg.norm(delta_coords)
+
+                current_heading = self.get_current_heading()
+                
+                error = current_heading - target_heading
+                if error > 180:
+                    error -= 360
+                elif error < -180:
+                    error += 360
+                correction = self.Kp * error
+
+                reference_distance = 10
+                distance_correction = np.tanh(distance_target/reference_distance)
+
+                # Proportional command to the motors
+                base_speed = self.max_speed * 0.9
+
+                left_motor = distance_correction*base_speed + correction
+                right_motor = distance_correction*base_speed - correction
+
+                # Clip motor speeds within valid range
+                left_motor = np.clip(left_motor, -self.max_speed, self.max_speed)
+                right_motor = np.clip(right_motor, -self.max_speed, self.max_speed)
+
+                if distance < 10:
+                    left_motor, right_motor = 0, 0
+
+                # Send speed commands to motors
+                self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
+                
+
+                print("Vitesse moteur:", round(distance_correction*base_speed,2), "D_Corr:", round(distance_correction, 2), 
+                        "Error:", round(error, 2), "Distance:", round(distance_target, 2), end="\r")
+                time.sleep(self.dt)
+
+        # Stop the motors after duration
+        #self.arduino_driver.send_arduino_cmd_motor(0, 0)
 
 
 class Client:
