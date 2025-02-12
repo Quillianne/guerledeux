@@ -421,7 +421,9 @@ class Client:
         pass
 
     def receive(self):
-        data = self.client.recv(1024).decode()
+        data = self.client.recv(1024)
+        print(data)
+        data = data.decode()
         if not data :
             print("server ", self.host, ": no data received")
             self.client.close()
