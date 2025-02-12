@@ -387,7 +387,7 @@ class Navigation:
         # Stop the motors after duration
         self.arduino_driver.send_arduino_cmd_motor(0, 0)
 
-    def stay_at(self, point, cartesien=True):
+    def stay_at(self, point, cartesien=False):
         """
         This function allow the boat to stay at a desired position point
         """
@@ -395,9 +395,10 @@ class Navigation:
             point = geo.conversion_spherique_cartesien(point)
 
         current_position = np.array(self.gps.get_coords())
-        while current_position - point > 5:
+        while True:
             current_position = np.array(self.gps.get_coords())
-            self.follow_gps(point, cartesien=True)
+            if np.linalg.norm(current_position - point) > 5:
+                self.follow_gps(point, cartesien=cartesien)
             time.sleep(0.1)
 
 
