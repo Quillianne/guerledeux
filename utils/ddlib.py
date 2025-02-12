@@ -379,6 +379,24 @@ class Navigation:
         self.arduino_driver.send_arduino_cmd_motor(0, 0)
 
 
+class Client:
+    def __init__(self, host="localhost", port=8080):
+        self.host = host
+        self.port = port
+        self.client = None
+
+    def connect(self):
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client.connect((self.host, self.port))
+
+    def send(self, data):
+        self.client.sendall(data.encode())
+
+    def receive(self):
+        return self.client.recv(1024).decode()
+
+    def close(self):
+        self.client.close() 
 
 
 # Exemple d'utilisation
