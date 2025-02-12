@@ -410,16 +410,15 @@ class Client:
         if not data :
             print("server ", self.host, ": no data received")
             self.last_data = data
-            return self.serv_decode()
+            return None
 
         print("received :", data, " from server :", self.host)
-        return data
+        print("decoded data :", self.serv_decode())
+        return self.serv_decode()
     
     def serv_decode(self):
         decoded_data = self.last_data.split(";")
-        print("decoded_data :", decoded_data)
         return decoded_data
-
 
 
     def __del__(self):
