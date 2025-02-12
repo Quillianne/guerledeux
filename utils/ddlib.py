@@ -342,7 +342,7 @@ class Navigation:
             if current_coords[0] != None and current_coords[1] != None:
                 # Compute heading to target
                 delta_coords = target_coords - current_coords
-                target_heading = -np.degrees(np.arctan2(delta_coords))*180/np.pi
+                target_heading = -np.degrees(np.arctan2(delta_coords[1], delta_coords[0]))*180/np.pi
 
                 # Compute distance to target
                 distance = np.linalg.norm(delta_coords)
