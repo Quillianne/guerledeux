@@ -452,13 +452,13 @@ class Navigation:
                     error += 360
                 correction = self.Kp * error
 
-                reference_distance = 10
+                reference_distance = 8
                 distance_correction = np.tanh(distance_target/reference_distance)
 
                 # Proportional command to the motors
                 base_speed = self.max_speed * 0.9
 
-                if distance_target < 10:
+                if distance_target < 5:
                     distance_correction = 0
 
                 left_motor = distance_correction*base_speed + correction
