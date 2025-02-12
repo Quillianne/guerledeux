@@ -48,7 +48,7 @@ def robot1_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('0.0.0.0', 5000))  # Listen on all available interfaces
     server_socket.listen(15)  # Allow up to 15 clients
-    print("DDBoat 17 (Server) is waiting for connections...")
+    print("DDBoat 5 (Server) is waiting for connections...")
     
     while True:
         conn, addr = server_socket.accept()
