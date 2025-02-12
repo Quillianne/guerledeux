@@ -427,7 +427,7 @@ class Client:
         self.host = server_ip
         self.port = port
         self.client = None
-        self.connect()
+        #self.connect()
 
         self.last_data = None
 
@@ -440,16 +440,16 @@ class Client:
         pass
 
     def receive(self):
+        self.connect()
         data = self.client.recv(1024)
         print(data)
         data = data.decode()
         if not data :
             print("server ", self.host, ": no data received")
-            self.client.close()
-            self.connect()
             return None
 
         self.last_data = data
+        self.client.close()
         #print("received :", data, " from server :", self.host)
         #print("decoded data :", self.serv_decode())
         return self.serv_decode()
