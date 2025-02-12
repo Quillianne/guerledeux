@@ -5,6 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from utils import ddlib
 from settings import DT
+from utils import geo_conversion as geo
 from circle_trajectory import circle_trajectory, circle_trajectory_dot
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'drivers-ddboat-v2'))
@@ -56,8 +57,11 @@ duration = 0
 t0 = time.time()
 
 def get_master_position():
-    return robot2_client_onetime("172.20.25.217")
-
+    response = robot2_client_onetime("172.20.25.217")
+    response = response.split(";")
+    latitude = geo.convert_to_decimal_degrees(response[0], response[1][0])
+    longitude = geo.convert_to_decimal_degrees(response[2], response[3][0])
+    return (latitude,longitude)
 
 print("demarrage suivi de trajectoire")
 while duration < max_time:
