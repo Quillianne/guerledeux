@@ -404,7 +404,7 @@ class Navigation:
 
     def follow_boat(self, boat = 18, port = 5000, distance = 5):
         """
-        This function allow the boat to follow another boat
+        This function allows the boat to follow another boat
         """
         current_position = np.array(self.gps.get_coords())
         ip = "172.20.25.2" + str(boat)
@@ -430,29 +430,29 @@ class Client:
         self.host = server_ip
         self.port = port
         self.client = None
-        self.connect()
+        #self.connect()
 
         self.last_data = None
 
     def connect(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((self.host, self.port))
-        print("connected DDGOAT to server :", self.host)
+        #print("connected DDGOAT to server :", self.host)
 
     def send(self, data):
         pass
 
     def receive(self):
+        self.connect()
         data = self.client.recv(1024)
-        print(data)
+        #print(data)
         data = data.decode()
         if not data :
             print("server ", self.host, ": no data received")
-            self.client.close()
-            self.connect()
             return None
 
         self.last_data = data
+        self.client.close()
         #print("received :", data, " from server :", self.host)
         #print("decoded data :", self.serv_decode())
         return self.serv_decode()

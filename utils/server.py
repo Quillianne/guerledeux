@@ -2,8 +2,10 @@ import socket
 import threading
 import time
 import random
-import sys
+import sys, os
 import signal
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'drivers-ddboat-v2'))
 
 # DDBoat 17 (Server)
 def handle_client(conn, addr, gps):
@@ -40,14 +42,13 @@ def handle_client(conn, addr, gps):
         conn.close()
 
 def robot1_server():
-    sys.path.append('../drivers-ddboat-v2')
     import gps_driver_v2 as gps_drv
     gps = gps_drv.GpsIO(tty_dev=1)
     gps.set_filter_speed("0")
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('0.0.0.0', 5000))  # Listen on all available interfaces
     server_socket.listen(15)  # Allow up to 15 clients
-    print("DDBoat 17 (Server) is waiting for connections...")
+    print("DDBoat 5 (Server) is waiting for connections...")
     
     while True:
         conn, addr = server_socket.accept()
