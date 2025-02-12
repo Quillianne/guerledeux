@@ -159,8 +159,8 @@ class GPS():
                     # If you stored dt as a string, ensure it matches ISO 8601
                     time_str = str(dt)
 
-                f.write(f'      <trkpt lat="{lat}" lon="{lon}">\n')
-                f.write(f'        <time>{time_str}</time>\n')
+                f.write('      <trkpt lat="{}" lon="{}">\n'.format(lat, lon))
+                f.write('        <time>{}</time>\n'.format(time_str))
                 f.write( '      </trkpt>\n' )
 
             # Write footer
