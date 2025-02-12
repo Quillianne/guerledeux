@@ -417,12 +417,15 @@ class Navigation:
             time.sleep(2)
         while True:
             if target != None:
-                target_position = geo.conversion_cartesien_spherique(target)
+                target_position = geo.conversion_spherique_cartesien(target)
             current_position = np.array(self.gps.get_coords())
             distance_to_target = np.linalg.norm(current_position - target_position)
             if distance_to_target > distance:
                 self.follow_gps(target_position, cartesien=True, distance=distance)
+            else:
+                self.stay_at(target_position, cartesien=True)
             time.sleep(0.1)
+
 
 class Client:
     def __init__(self, server_ip, port=5000):     
@@ -436,7 +439,7 @@ class Client:
     def connect(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((self.host, self.port))
-        print("connected DDGOAT to server :", self.host)
+        #print("connected DDGOAT to server :", self.host)
 
     def send(self, data):
         pass
@@ -444,7 +447,7 @@ class Client:
     def receive(self):
         self.connect()
         data = self.client.recv(1024)
-        print(data)
+        #print(data)
         data = data.decode()
         if not data :
             print("server ", self.host, ": no data received")
