@@ -336,9 +336,10 @@ class Navigation:
         while distance_target > distance:
             
             # get current gps coordinates in cartesian
+
             current_coords = np.array(self.gps.get_coords())
             print(current_coords)
-            if current_coords != None:
+            if current_coords[0] != None and current_coords[1] != None:
                 # Compute heading to target
                 delta_coords = target_coords - current_coords
                 target_heading = -np.degrees(np.atan2(delta_coords))*180/np.pi
