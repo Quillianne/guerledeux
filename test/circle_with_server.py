@@ -26,14 +26,20 @@ max_time = 500
 duration = 0
 t0 = time.time()
 client = ddlib.Client("172.20.25.217", port=5000)
-
-
+point_serveur = None
+while point_serveur == None:
+    point_serveur = client.receive()
+    
 print("demarrage suivi de trajectoire")
+
 while duration < max_time:
     
-    point_serveur = client.receive()
-    print(point_serveur)
-    navigation.follow_trajectory(lambda t: circle_trajectory(t, M = point_serveur), lambda t: circle_trajectory_dot(t), 5)
+    get_point = client.receive()
+    if get_point != None:
+        point_serveur = get_point
+    else:
+        print("Pas de point récupéré")
+    navigation.follow_trajectory(lambda t: circle_trajectory(t, M = point_serveur), lambda t: circle_trajectory_dot(t), duration = 5, stop_motor=False)
     duration = time.time()-t0
 
 navigation.gps.export_gpx()
