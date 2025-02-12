@@ -317,7 +317,7 @@ class Navigation:
         #print("Fin de chantier")
 
     
-    def follow_gps(self, target_coords, cartesian=True, distance=5):
+    def follow_gps(self, target_coords, cartesian=True, distance=8):
         """
         Make the boat follow the desired GPS coordinates for a given duration.
 
