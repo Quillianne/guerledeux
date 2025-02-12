@@ -423,7 +423,7 @@ class Navigation:
             print(target)
             time_target_acquired = time.time()
             time.sleep(1)
-            
+
         target = geo.conversion_spherique_cartesien(target)
 
         print("position cible bien recuperee")
@@ -439,7 +439,8 @@ class Navigation:
 
             if self.gps.get_coords()[0] != None and self.gps.get_coords()[1] != None and target != None:
                 current_position = np.array(self.gps.get_coords())
-
+                print("pos: ", current_position)
+                print("target: ",target)
                 #print("position cible :", target, "position propre :", current_position)
 
                 delta_coords = target - current_position
