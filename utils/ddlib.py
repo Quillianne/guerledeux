@@ -345,8 +345,8 @@ class Navigation:
                 target_heading = -np.degrees(np.arctan2(delta_coords[1], delta_coords[0]))
 
                 # Compute distance to target
-                distance = np.linalg.norm(delta_coords)
-                #distance_target = distance
+                distance_target = np.linalg.norm(delta_coords)
+
 
                 # get current heading
                 current_heading = self.get_current_heading()
@@ -364,7 +364,7 @@ class Navigation:
 
 
                 reference_distance = 5
-                distance_correction = np.tanh(distance/reference_distance)
+                distance_correction = np.tanh(distance_target/reference_distance)
 
                 # Proportional command to the motors
                 base_speed = self.max_speed * 0.9
