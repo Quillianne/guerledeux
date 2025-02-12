@@ -427,8 +427,10 @@ class Navigation:
 
         while True:
             if time.time() - time_target_acquired > 2:
-                print("-------------New target acquired --------------", end="\r")
-                target = client_boat.receive() or target
+                received = client_boat.receive()
+                if received != None:
+                    target = received
+                    print("-------------------  New target acquired  ---------------------", end="\r")
                 time_target_acquired = time.time()
 
             if self.gps.get_coords()[0] != None and self.gps.get_coords()[1] != None and target != None:
