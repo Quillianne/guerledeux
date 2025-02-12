@@ -4,6 +4,7 @@ import sys
 import time
 import datetime
 import socket
+import threading
 
 from utils.roblib import *  # Importation des fonctions nécessaires
 import utils.geo_conversion as geo
@@ -438,10 +439,10 @@ class Client:
         decoded_data = (geo.convert_to_decimal_degrees(decoded_data[0], decoded_data[1][0]), geo.convert_to_decimal_degrees(decoded_data[2], decoded_data[3][0]))
         return decoded_data
 
-
     def __del__(self):
         if self.client:
             self.client.close()
+
 
 
 # Exemple d'utilisation
