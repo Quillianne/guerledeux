@@ -23,5 +23,5 @@ gps = ddlib.GPS()
 navigation = ddlib.Navigation(imu, gps, arduino, Kp=1, max_speed=240)
 
 print("demarrage du suivi de file")
-navigation.follow_boat(210)
+navigation.follow_boat(218)
 print("fin suivi de bateau")
