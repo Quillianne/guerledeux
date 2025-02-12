@@ -404,7 +404,7 @@ class Navigation:
 
     def follow_boat(self, boat = 18, port = 5000, distance = 5):
         """
-        This function allow the boat to follow another boat
+        This function allows the boat to follow another boat
         """
         current_position = np.array(self.gps.get_coords())
         ip = "172.20.25.2" + str(boat)
