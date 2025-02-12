@@ -318,7 +318,6 @@ class Navigation:
         np.savez("log/trajectory.npz", history=self.history)
         self.history = []
         #print("Fin de chantier")
-
     
     def follow_gps(self, target_coords, cartesian=True, distance=5):
         """
@@ -363,8 +362,6 @@ class Navigation:
                 elif error < -180:
                     error += 360
                 correction = self.Kp * error
-
-
 
                 reference_distance = 5
                 distance_correction = np.tanh(distance_target/reference_distance)
