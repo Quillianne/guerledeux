@@ -406,6 +406,7 @@ class Navigation:
         This function allows the boat to follow another boat
         """
         ip = "172.20.25." + str(boat)
+        print(ip)
         client_boat = Client(ip, port)
         target = None
         current_position = [None, None]
