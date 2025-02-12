@@ -29,6 +29,7 @@ client = ddlib.Client("172.20.25.217", port=5000)
 point_serveur = None
 while point_serveur == None:
     point_serveur = client.receive()
+    time.sleep(2)
 
 print("demarrage suivi de trajectoire")
 

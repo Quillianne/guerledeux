@@ -409,6 +409,8 @@ class Client:
         data = self.client.recv(1024).decode()
         if not data :
             print("server ", self.host, ": no data received")
+            self.client.close()
+            self.connect()
             return None
 
         self.last_data = data
