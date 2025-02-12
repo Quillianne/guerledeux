@@ -434,7 +434,7 @@ class Client:
     def connect(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((self.host, self.port))
-        print("connected DDGOAT to server :", self.host)
+        #print("connected DDGOAT to server :", self.host)
 
     def send(self, data):
         pass
@@ -442,7 +442,7 @@ class Client:
     def receive(self):
         self.connect()
         data = self.client.recv(1024)
-        print(data)
+        #print(data)
         data = data.decode()
         if not data :
             print("server ", self.host, ": no data received")
