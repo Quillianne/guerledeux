@@ -432,6 +432,7 @@ class Navigation:
                 if received != None:
                     target = received
                     print("-------------------  New target acquired  -------------------", end="\r")
+                    print(target)
                 time_target_acquired = time.time()
 
             if self.gps.get_coords()[0] != None and self.gps.get_coords()[1] != None and target != None:
