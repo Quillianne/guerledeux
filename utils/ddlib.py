@@ -423,6 +423,7 @@ class Navigation:
                 target_position = geo.conversion_spherique_cartesien(target)
             if self.gps.get_coords() != None:
                 current_position = np.array(self.gps.get_coords())
+            print("position cible :", target_position, "position propre :", current_position)
             distance_to_target = np.linalg.norm(current_position - target_position)
             if distance_to_target > distance:
                 self.follow_gps(target_position, cartesien=True, distance=distance)
