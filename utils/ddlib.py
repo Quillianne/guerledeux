@@ -427,6 +427,7 @@ class Navigation:
 
         while True:
             if time_target_acquired - time.time() > 2:
+                print("-------------New target acquired --------------", end="\r")
                 target = client_boat.receive() or target
                 time_target_acquired = time.time()
 
