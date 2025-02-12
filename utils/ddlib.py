@@ -346,7 +346,7 @@ class Navigation:
 
                 # Compute distance to target
                 distance = np.linalg.norm(delta_coords)
-                distance_target = distance
+                #distance_target = distance
 
                 # get current heading
                 current_heading = self.get_current_heading()
