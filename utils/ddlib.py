@@ -212,7 +212,7 @@ class Navigation:
         self.arduino_driver.send_arduino_cmd_motor(0, 0)
 
     def get_current_heading(self):
-        """Get the current heading (yaw angle) from the IMU."""
+        """Get the current heading (yaw angle) from the IMU in degrees."""
         _, _, yaw = self.imu.get_euler_angles()
         return np.degrees(yaw)  # Convert to degrees
 
