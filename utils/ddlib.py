@@ -419,8 +419,8 @@ class Navigation:
 
         while target == None:
             target = client_boat.receive()
-            print(target)
-            #time_target_acquired = time.time()
+            #print(target)
+            time_target_acquired = time.time()
             time.sleep(1)
 
         print("position cible bien recuperee")
