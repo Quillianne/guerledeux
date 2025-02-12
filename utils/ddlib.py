@@ -6,6 +6,11 @@ import datetime
 import socket
 import threading
 
+import termios
+import tty
+import atexit
+from select import select
+
 from utils.roblib import *  # Importation des fonctions nécessaires
 import utils.geo_conversion as geo
 
@@ -409,12 +414,21 @@ class Navigation:
         """
         This function allows the boat to follow another boat
         """
+        # --- Mise en place du mode "raw" pour détecter des touches ---
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        tty.setraw(fd)
+        # On restaure le terminal proprement à la fin, quoi qu’il arrive
+        atexit.register(lambda: termios.tcsetattr(fd, termios.TCSADRAIN, old_settings))
+
+
+
         ip = "172.20.25." + str(boat)
         print(ip)
         client_boat = Client(ip, port)
         target = None
         current_position = [None, None]
-        history = []
+        self.history = []
         while current_position[0] == None or current_position[1] == None:
             current_position = np.array(self.gps.get_coords())
             #print(current_position)
@@ -433,6 +447,18 @@ class Navigation:
         print("position cible bien recuperee")
         try:
             while True:
+
+                r, _, _ = select([sys.stdin], [], [], 0)  # timeout=0 => non-bloquant
+                if r:
+                    key = sys.stdin.read(1)  # lire 1 caractère
+                    if key == 'h':
+                        print("\nTouche 'h' détectée : on rentre à la maison !")
+                        self.arduino_driver.send_arduino_cmd_motor(0, 0)
+                        np.savez("log/follow_boat.npz", history=self.history)
+                        self.return_home()
+                        return  # on quitte la fonction follow_boat
+
+
                 if time.time() - time_target_acquired > 2:
                     received = client_boat.receive()
                     if received != None:
@@ -447,7 +473,7 @@ class Navigation:
                     #print("position cible :", target, "position propre :", current_position)
 
                     delta_coords = target - current_position
-                    history.append((target, current_position))
+                    self.history.append((target, current_position))
                     target_heading = -np.degrees(np.arctan2(delta_coords[1], delta_coords[0]))
                     distance_target = np.linalg.norm(delta_coords)
 
@@ -487,7 +513,7 @@ class Navigation:
                     time.sleep(self.dt)
         except KeyboardInterrupt:
             self.arduino_driver.send_arduino_cmd_motor(0, 0)
-            np.savez("log/follow_boat.npz", history=history)
+            np.savez("log/follow_boat.npz", history=self.history)
             print("Fin de la navigation")
 
 
