@@ -433,7 +433,7 @@ class Navigation:
                 received = client_boat.receive()
                 if received != None:
                     target = received
-                    print(target)
+                    #print(target)
                     target = np.array(geo.conversion_spherique_cartesien(target))
                     print("-------------------  New target acquired  -------------------", end="\r")
                 time_target_acquired = time.time()
