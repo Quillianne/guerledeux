@@ -17,7 +17,7 @@ gps = GPS()
 arduino = arddrv.ArduinoIO()
 
 # Création de l'instance de navigation
-navigation = Navigation(imu, gps, arduino, Kp=1.5, max_speed=250)
+navigation = Navigation(imu, gps, arduino, Kp=1, max_speed=250)
 
 # Définition du cap cible (en degrés)
 target_heading = 90  # Exemple : maintenir un cap de 90° (Est)

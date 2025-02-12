@@ -18,9 +18,22 @@ gps = ddlib.GPS()
 
 # Création de l'instance de navigation
 navigation = ddlib.Navigation(imu, gps, arduino, Kp=1, max_speed=240)
-navigation.trigger_gesture()
+#navigation.trigger_gesture()
+max_time = 500
+duration = 0
+t0 = time.time()
+
+def get_master_position():
+    pass
+
 
 print("demarrage suivi de trajectoire")
-navigation.follow_trajectory(circle_trajectory, circle_trajectory_dot)
+while duration < max_time:
+    
+    point_serveur = get_master_position()
+
+    navigation.follow_trajectory(lambda t: circle_trajectory(t,M = point_serveur), lambda t: circle_trajectory_dot(t, M = point_serveur), 5)
+    duration = time.time()-t0
+
 navigation.gps.export_gpx()
 print("fin suivi de trajectoire")
