@@ -168,7 +168,7 @@ class GPS():
             f.write(gpx_footer)
 
 class Navigation:
-    def __init__(self, imu, gps, arduino_driver, Kp=1.0, max_speed=100):
+    def __init__(self, imu, gps, arduino_driver, Kp=1.0, max_speed=250):
         """
         Initialize Navigation system.
         
