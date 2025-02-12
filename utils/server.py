@@ -2,7 +2,7 @@ import socket
 import threading
 import time
 import random
-import sys
+import sys, os
 import signal
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'drivers-ddboat-v2'))
