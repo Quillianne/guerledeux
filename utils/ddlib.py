@@ -337,6 +337,7 @@ class Navigation:
             
             # get current gps coordinates in cartesian
             current_coords = np.array(self.gps.get_coords())
+            print(current_coords)
             if current_coords != None:
                 # Compute heading to target
                 delta_coords = target_coords - current_coords
