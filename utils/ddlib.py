@@ -402,6 +402,25 @@ class Navigation:
                 self.follow_gps(point, cartesien=cartesien)
             time.sleep(0.1)
 
+    def follow_boat(self, boat = 18, port = 5000, distance = 5):
+        """
+        This function allow the boat to follow another boat
+        """
+        current_position = np.array(self.gps.get_coords())
+        ip = "172.20.25.2" + str(boat)
+        client_boat = Client(ip, port)
+        target = None
+        while target == None:
+            target = client_boat.receive()
+            time.sleep(2)
+        while True:
+            if target != None:
+                target_position = geo.conversion_cartesien_spherique(target)
+            current_position = np.array(self.gps.get_coords())
+            distance_to_target = np.linalg.norm(current_position - target_position)
+            if distance_to_target > distance:
+                self.follow_gps(target_position, cartesien=True, distance=distance)
+            time.sleep(0.1)
 
 class Client:
     def __init__(self, server_ip, port=5000):     
