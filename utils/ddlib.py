@@ -351,6 +351,8 @@ class Navigation:
                 current_heading = self.get_current_heading()
                 
                 # Error
+                print(current_heading)
+                print(target_heading)
                 error = current_heading - target_heading
                 if error > 180:
                     error -= 360
