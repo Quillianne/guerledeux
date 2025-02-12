@@ -420,7 +420,7 @@ class Navigation:
 
         while target == None:
             target = client_boat.receive()
-            #print(target)
+            print(target)
             time_target_acquired = time.time()
             time.sleep(1)
 
