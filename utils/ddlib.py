@@ -352,8 +352,12 @@ class Navigation:
                 
                 # Error
                 error = current_heading - target_heading
-                error = (error + 180) % 360 - 180  # Keep error within [-180, 180] degrees
+                if error > 180:
+                    error -= 360
+                elif error < -180:
+                    error += 360
                 correction = self.Kp * error
+
 
 
                 reference_distance = 5
