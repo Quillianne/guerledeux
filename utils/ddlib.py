@@ -317,7 +317,7 @@ class Navigation:
         #print("Fin de chantier")
 
     
-    def follow_gps(self, target_coords, cartesian=True, distance=8):
+    def follow_gps(self, target_coords, cartesian=True, distance=5):
         """
         Make the boat follow the desired GPS coordinates for a given duration.
 
@@ -381,7 +381,7 @@ class Navigation:
                 
 
                 print("Vitesse moteur:", round(distance_correction*base_speed,2), "D_Corr:", round(distance_correction, 2), 
-                        "Error:", round(error, 2), "Distance:", round(distance, 2), end="\r")
+                        "Error:", round(error, 2), "Distance:", round(distance_target, 2), end="\r")
                 time.sleep(self.dt)
 
         # Stop the motors after duration
