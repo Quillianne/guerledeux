@@ -184,6 +184,7 @@ class Navigation:
         self.arduino_driver = arduino_driver
         self.Kp = Kp  # Proportional gain
         self.max_speed = max_speed  # Maximum motor speed
+        self.history = []
 
     def get_z_acc_mean(self, duree = 0.5):
         start_time = time.time()
@@ -258,7 +259,7 @@ class Navigation:
         self.arduino_driver.send_arduino_cmd_motor(0, 0)
         print("Navigation complete. Motors stopped.")
     
-    def follow_trajectory(self, f, fdot, duration = 450):
+    def follow_trajectory(self, f, fdot, duration = 500):
         """
         Make the boat follow a trajectory defined by a function f(t) and its derivative fdot(t).
         
@@ -273,6 +274,7 @@ class Navigation:
             x, y = f(t) #pos de la cible
             vx, vy = fdot(t) #v de la cible
             px, py = self.gps.get_coords() #pos du bateau
+            self.history.append((np.array((x,y)),np.array((px,py))))
             if px != None and py != None:
                 #calcul du cap à viser
                 vector_to_target = np.array([x, y]) - np.array([px, py])
@@ -309,7 +311,9 @@ class Navigation:
                 time.sleep(self.dt)
                 
         self.arduino_driver.send_arduino_cmd_motor(0, 0)
-        print("Fin de chantier")
+        np.savez("trajectory.npz", history=self.history)
+        self.history = []
+        #print("Fin de chantier")
 
     
     def follow_gps(self, target_coords, cartesian=True, distance=5):
