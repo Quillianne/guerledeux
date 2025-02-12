@@ -458,6 +458,9 @@ class Navigation:
                 # Proportional command to the motors
                 base_speed = self.max_speed * 0.9
 
+                if distance < 10:
+                    distance_correction = 0
+
                 left_motor = distance_correction*base_speed + correction
                 right_motor = distance_correction*base_speed - correction
 
@@ -465,8 +468,7 @@ class Navigation:
                 left_motor = np.clip(left_motor, -self.max_speed, self.max_speed)
                 right_motor = np.clip(right_motor, -self.max_speed, self.max_speed)
 
-                if distance < 10:
-                    left_motor, right_motor = 0, 0
+
 
                 # Send speed commands to motors
                 self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
