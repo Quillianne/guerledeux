@@ -29,6 +29,6 @@ arduino = arddrv.ArduinoIO()
 
 Nav = ddlib.Navigation(imu, gps, arduino)
 
-Nav.follow_gps((48.1990704, -3.0149072), False)
+Nav.follow_gps((48.1989261, -3.0146283), False)
 
 
