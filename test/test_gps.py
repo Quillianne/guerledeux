@@ -18,17 +18,17 @@ print(GYRO_CALIBRATION_FILE)
 gps = ddlib.GPS()
 imu = ddlib.IMU()
 
-while True:
-    time.sleep(0.05)
-    gps.get_coords()
-    print("coordonnées gps :", gps.gps_position,
-          " | coordonnées cartésiennes :", gps.x, gps.y, end="\r")
+#while True:
+#    time.sleep(0.05)
+#    gps.get_coords()
+#    print("coordonnées gps :", gps.gps_position,
+#          " | coordonnées cartésiennes :", gps.x, gps.y, end="\r")
     
 
 arduino = arddrv.ArduinoIO()
 
 Nav = ddlib.Navigation(imu, gps, arduino)
 
-Nav.follow_gps((48.1989261, -3.0146283), False)
+Nav.follow_gps((48.19904833333333, -3.0148149999999996), False)
 
 
