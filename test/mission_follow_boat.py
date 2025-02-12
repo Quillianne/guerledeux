@@ -33,3 +33,6 @@ if __name__ == '__main__':
 print("On suit le bateau ", number)
 navigation.follow_boat(number)
 print("fin suivi de bateau")
+print("retour maison")
+navigation.return_home()
+print("fin retour maison")
