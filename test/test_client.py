@@ -10,3 +10,4 @@ from utils import ddlib
 
 client = ddlib.Client("172.20.25.217", port=5000)
 client.receive()
+client.receive()
