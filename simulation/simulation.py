@@ -39,7 +39,7 @@ def control(x, m, X, seuil_proximite = 8, seuil_eloignement = 20):
 
 # paramètres
 a = 0.1
-m = 6  # nombre de bateaux
+m = 10  # nombre de bateaux
 X = 10 * np.random.rand(m, 4, 1)
 dt = 0.01
 
