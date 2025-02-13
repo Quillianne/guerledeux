@@ -723,7 +723,7 @@ class Navigation:
             if normF < 1e-6:
                 # on peut décider de s'arrêter
                 self.arduino_driver.send_arduino_cmd_motor(0, 0)
-                print("[Boat", num, "] Force=0 => Stop", end="\r")
+                #print("[Boat", num, "] Force=0 => Stop", end="\r")
                 time.sleep(self.dt)
                 continue
 
