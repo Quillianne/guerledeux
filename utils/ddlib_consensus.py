@@ -554,7 +554,7 @@ class Navigation:
             correction = self.Kp * error
             
             # speed proportionnal to the total force
-            base_speed = self.max_speed * np.linalg.norm(total_force)/10
+            base_speed = self.max_speed* (0.8 + np.linalg.norm(total_force)/200)
             left_motor = base_speed + correction
             right_motor = base_speed - correction
 
