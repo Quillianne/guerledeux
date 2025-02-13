@@ -502,6 +502,7 @@ class Navigation:
         safe_distance = 15.0  # Safe distance to maintain from other boats
 
         t_last_call = time.time()
+        target_heading = 0.0
 
         while True:
             current_position = np.array(self.gps.get_coords())
