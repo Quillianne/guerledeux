@@ -3,13 +3,15 @@ import time
 import numpy as np
 import socket
 
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 from utils import ddlib_consensus as ddlib
 from settings import POINT_BOUEE, FREQUENCE_CIRCLE, RAYON_CIRCLE
 import utils.geo_conversion as geo_conversion
 
-sys.path.append(os.path.join(os.path.dirname(__file__), 'drivers-ddboat-v2'))
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
+sys.path.append(os.path.join(os.path.dirname(__file__), 'drivers-ddboat-v2'))
 
 import arduino_driver_v2 as arddrv
 
