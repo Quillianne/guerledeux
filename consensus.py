@@ -45,7 +45,36 @@ Nav = ddlib.Navigation(imu, gps, arduino, Kp=2)
 # Nav.follow_trajectory(circle_trajectory, circle_trajectory_dot)
 
 
-Nav.follow_gps((48.20010, -3.01573), cartesian = False, distance = 5)
+# Nav.follow_gps((48.20010, -3.01573), cartesian = False, distance = 5)
+# time.sleep(10)
+# Nav.return_home()
+
+# def circle_trajectory(t, R = RAYON_CIRCLE, f = FREQUENCE_CIRCLE, M = POINT_BOUEE):  #fonction qui retourne le point a rejoindre à l'instant t (cartesien)
+#     """
+#     dessine un cercle de rayon R autour du point M
+#     """
+#     a0, a1 = geo_conversion.conversion_spherique_cartesien(M)
+
+#     x = R*np.sin(2*np.pi*f*t) + a0
+#     y = R*np.cos(2*np.pi*f*t) + a1
+
+#     return x,y
+
+# def circle_trajectory_dot(t, f = FREQUENCE_CIRCLE, R = RAYON_CIRCLE):  #fonction qui retourne la dérivé du point a rejoindre à l'instant t (cartesien)    
+#     """
+#     fonction qui retourne la dérivée du cercle
+#     """
+#     x_dot = 2*np.pi*R*f*np.cos(f*t)
+#     y_dot = -2*np.pi*R*f*np.sin(f*t)
+
+#     return x_dot, y_dot
+
+# print("demarrage suivi de trajectoire")
+# Nav.follow_trajectory(circle_trajectory, circle_trajectory_dot)
+
+
+#Nav.follow_gps((48.20010, -3.01573), cartesian = False, distance = 5)
+Nav.attraction_repulsion("05")
 time.sleep(10)
 
 hostname = socket.gethostname()

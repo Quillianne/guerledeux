@@ -486,7 +486,7 @@ class Navigation:
             np.savez("log/follow_boat.npz", history=self.history)
             print("Fin de la navigation")
 
-    def attraction_repulsion(self, num, repuls_weight=1.0, attract_weight=1.0, port=5000):
+    def attraction_repulsion(self, num:str, repuls_weight=1.0, attract_weight=1.0, port=5000):
         # gather the boats used for the consensus (stored in config.txt)
         boats = []
         with open("config.txt", "r") as file:
@@ -508,6 +508,9 @@ class Navigation:
             if current_position[0] is None or current_position[1] is None:
                 # use last value if None
                 current_position = self.gps.gps_position
+                if current_position is None:
+                    # if no data at all, skip this iteration
+                    continue
 
             total_force = np.array([0.0, 0.0])
 
@@ -515,10 +518,12 @@ class Navigation:
             for boat in boats:
                 # get their position and distance
                 target = boat.receive()
-                if target is None:
+                if target is None or (isinstance(target, tuple) and any(t is None for t in target)):
                     continue
 
+                print("TARGET:", target, end="\r")
                 target_position = np.array(geo.conversion_spherique_cartesien(target))
+                print("TARGET POSITION:", target_position, end="\r")
                 delta_position = target_position - current_position
                 distance = np.linalg.norm(delta_position)
 
@@ -533,7 +538,7 @@ class Navigation:
             
 
             # Compute the heading to follow
-            target_heading = -np.degrees(np.arctan2(total_force[1], total_force[0]))
+            target_heading = np.degrees(np.arctan2(total_force[1], total_force[0]))
 
             # get current heading
             current_heading = self.get_current_heading()
@@ -778,6 +783,7 @@ class Client:
         pass
 
     def receive(self):
+        """returns the last data received from the server, as gsp couple"""
         self.connect()
         data = self.client.recv(1024)
         #print(data)

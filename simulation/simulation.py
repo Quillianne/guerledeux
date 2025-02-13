@@ -42,7 +42,7 @@ def control(x, m, X):
 
 # paramètres
 a = 0.1
-m = 50  # nombre de bateaux
+m = 10  # nombre de bateaux
 X = 10 * np.random.rand(m, 4, 1)
 dt = 0.1
 
