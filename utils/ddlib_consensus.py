@@ -505,8 +505,8 @@ class Navigation:
         target_heading = 0.0
 
         while True:
-            current_position = np.array(self.gps.get_coords())
 
+            current_position = np.array(self.gps.get_coords())
             # verify the data
             if current_position[0] is None or current_position[1] is None:
                 # use last value if None
@@ -534,13 +534,11 @@ class Navigation:
                 # update the total force
                 # if too close
                 if distance < safe_distance:
-                    total_force += repulsion_weight * delta_position / distance**2
+                    total_force += repulsion_weight * delta_position / distance
 
                 # if far away
                 else:
-                    total_force -= attraction_weight * delta_position / distance**2
-
-                print("DISTANCE=", distance)
+                    total_force -= attraction_weight * delta_position / distance
             
 
             # Compute the heading to follow
@@ -548,6 +546,7 @@ class Navigation:
 
             # get current heading
             current_heading = self.get_current_heading()
+            print("HEADINGS:", current_heading, target_heading)
             
             # error
             error = current_heading - target_heading
