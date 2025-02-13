@@ -528,11 +528,11 @@ class Navigation:
                 # update the total force
                 # if too close
                 if distance < safe_distance:
-                    total_force -= repulsion_weight * delta_position**2 / distance
+                    total_force -= repulsion_weight * delta_position / distance**2
 
                 # if far away
                 else:
-                    total_force += attraction_weight * delta_position**2 / distance
+                    total_force += attraction_weight * delta_position / distance**2
             
 
             # Compute the heading to follow
@@ -548,7 +548,7 @@ class Navigation:
             correction = self.Kp * error
             
             # speed proportionnal to the total force
-            base_speed = self.max_speed * np.linalg.norm(total_force)/100
+            base_speed = self.max_speed * np.linalg.norm(total_force)/10
             left_motor = base_speed + correction
             right_motor = base_speed - correction
 
