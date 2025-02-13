@@ -14,6 +14,7 @@ arduino = arddrv.ArduinoIO()
 
 Nav = ddlib.Navigation(imu, gps, arduino, Kp=2)
 
-Nav.follow_gps((48.20010, -3.01573), cartesian = False, distance = 5)
+#Nav.follow_gps((48.20010, -3.01573), cartesian = False, distance = 5)
+Nav.attraction_repulsion()
 time.sleep(10)
 Nav.return_home()
