@@ -516,10 +516,11 @@ class Navigation:
                 # get their position and distance
                 target = boat.receive()
                 if target is None or (isinstance(target, tuple) and any(t is None for t in target)):
-                    print("Target:", target, "from boat:", boat.client)
                     continue
 
+                print("TARGET:", target)
                 target_position = np.array(geo.conversion_spherique_cartesien(target))
+                print("TARGET POSITION:", target_position)
                 delta_position = target_position - current_position
                 distance = np.linalg.norm(delta_position)
 
