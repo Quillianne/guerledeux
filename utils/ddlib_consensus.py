@@ -486,11 +486,13 @@ class Navigation:
             np.savez("log/follow_boat.npz", history=self.history)
             print("Fin de la navigation")
 
-    def attraction_repulsion(self, repuls_weight=1.0, attract_weight=1.0, port=5000):
+    def attraction_repulsion(self, num, repuls_weight=1.0, attract_weight=1.0, port=5000):
         # gather the boats used for the consensus (stored in config.txt)
         boats = []
         with open("config.txt", "r") as file:
             for line in file:
+                if line == "num\n":
+                    continue
                 ip = "172.20.25.2" + line
                 boats.append(Client(ip, int(port)))
 
@@ -529,7 +531,7 @@ class Navigation:
                 else:
                     total_force += attraction_weight * delta_position**2 / distance
             
-            
+
             # Compute the heading to follow
             target_heading = -np.degrees(np.arctan2(total_force[1], total_force[0]))
 
