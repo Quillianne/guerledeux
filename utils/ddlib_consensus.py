@@ -256,7 +256,7 @@ class Navigation:
         self.arduino_driver.send_arduino_cmd_motor(0, 0)
         print("Navigation complete. Motors stopped.")
     
-    def follow_trajectory(self, f, fdot, duration = 100, stop_motor = True):
+    def follow_trajectory(self, f, fdot, duration = 140, stop_motor = True):
         """
         Make the boat follow a trajectory defined by a function f(t) and its derivative fdot(t).
         
