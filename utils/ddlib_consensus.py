@@ -501,6 +501,8 @@ class Navigation:
         repulsion_weight = 1.0
         safe_distance = 15.0  # Safe distance to maintain from other boats
 
+        t_last_call = time.time()
+
         while True:
             current_position = np.array(self.gps.get_coords())
 
@@ -516,6 +518,9 @@ class Navigation:
 
             # for each boat
             for boat in boats:
+                # cooldown before next call
+                if time.time() - t_last_call < 1.0:
+                    continue
                 # get their position and distance
                 target = boat.receive()
                 if target is None or (isinstance(target, tuple) and any(t is None for t in target)):
