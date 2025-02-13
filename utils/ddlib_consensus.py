@@ -40,16 +40,16 @@ class IMU:
             lines = f.readlines()
         
         lines = [float(line.strip()) for line in lines]
-
         # Assurons-nous d'avoir au moins 12 lignes
         if len(lines) < 12:
             raise ValueError("Le fichier doit contenir au moins 12 lignes de données.")
 
         # Extraire les valeurs
-        xN = lines[0:3]
-        xS = lines[3:6]
-        xW = lines[6:9]
-        xU = lines[9:12]
+        xN = np.array(lines[0:3]).reshape(3, 1)
+        xS = np.array(lines[3:6]).reshape(3, 1)
+        xW = np.array(lines[6:9]).reshape(3, 1)
+        xU = np.array(lines[9:12]).reshape(3, 1)
+        
 
         # Constantes
         I = np.radians(64)  # Inclinaison du champ magnetique en radians
