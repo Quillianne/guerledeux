@@ -486,6 +486,74 @@ class Navigation:
             np.savez("log/follow_boat.npz", history=self.history)
             print("Fin de la navigation")
 
+    def attraction_repulsion(self, port=5000):
+        # gather the boats used for the consensus (stored in config.txt)
+        boats = []
+        with open("config.txt", "r") as file:
+            for line in file:
+                ip = "172.20.25.2" + line
+                boats.append(Client(ip, int(port)))
+
+        # Initialize variables for attraction and repulsion
+        attraction_weight = 1.0
+        repulsion_weight = 1.0
+        safe_distance = 15.0  # Safe distance to maintain from other boats
+
+        while True:
+            current_position = np.array(self.gps.get_coords())
+
+            # verify the data
+            if current_position[0] is None or current_position[1] is None:
+                # use last value if None
+                current_position = self.gps.gps_position
+
+            attraction_force = np.array([0.0, 0.0])
+            repulsion_force = np.array([0.0, 0.0])
+
+            for boat in boats:
+                target = boat.receive()
+            if target is None:
+                continue
+
+            target_position = np.array(geo.conversion_spherique_cartesien(target))
+            delta_position = target_position - current_position
+            distance = np.linalg.norm(delta_position)
+
+            if distance < safe_distance:
+                repulsion_force -= repulsion_weight * delta_position / distance
+            else:
+                attraction_force += attraction_weight * delta_position / distance
+
+            total_force = attraction_force + repulsion_force
+            target_heading = -np.degrees(np.arctan2(total_force[1], total_force[0]))
+
+            current_heading = self.get_current_heading()
+            error = current_heading - target_heading
+            if error > 180:
+            error -= 360
+            elif error < -180:
+            error += 360
+            correction = self.Kp * error
+
+            base_speed = self.max_speed * 0.9
+            left_motor = base_speed + correction
+            right_motor = base_speed - correction
+
+            left_motor = np.clip(left_motor, -self.max_speed, self.max_speed)
+            right_motor = np.clip(right_motor, -self.max_speed, self.max_speed)
+
+            self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
+
+            print("Attraction:", attraction_force, "Repulsion:", repulsion_force, 
+              "Total Force:", total_force, "Error:", round(error, 2), end="\r")
+            time.sleep(self.dt)
+        
+        
+
+
+
+
+
 
 class Client:
     def __init__(self, server_ip, port=5000):     
