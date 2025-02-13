@@ -508,6 +508,9 @@ class Navigation:
             if current_position[0] is None or current_position[1] is None:
                 # use last value if None
                 current_position = self.gps.gps_position
+                if current_position is None:
+                    # if no data at all, skip this iteration
+                    continue
 
             total_force = np.array([0.0, 0.0])
 
