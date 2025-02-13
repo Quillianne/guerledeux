@@ -604,7 +604,7 @@ class Navigation:
         try:
             my_index = all_boats_nums.index(num)
         except ValueError:
-            print(f"ERREUR : le bateau {num} n'est pas dans config.txt !")
+            print("ERREUR : le bateau {} n'est pas dans config.txt !".format(num))
             return
 
         # Déterminer l'indice du "leader" (ex: i suit i-1 en mod N)
