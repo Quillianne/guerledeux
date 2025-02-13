@@ -486,11 +486,13 @@ class Navigation:
             np.savez("log/follow_boat.npz", history=self.history)
             print("Fin de la navigation")
 
-    def attraction_repulsion(self, port=5000):
+    def attraction_repulsion(self, num, repuls_weight=1.0, attract_weight=1.0, port=5000):
         # gather the boats used for the consensus (stored in config.txt)
         boats = []
         with open("config.txt", "r") as file:
             for line in file:
+                if line == "num\n":
+                    continue
                 ip = "172.20.25.2" + line
                 boats.append(Client(ip, int(port)))
 
@@ -507,35 +509,43 @@ class Navigation:
                 # use last value if None
                 current_position = self.gps.gps_position
 
-            attraction_force = np.array([0.0, 0.0])
-            repulsion_force = np.array([0.0, 0.0])
+            total_force = np.array([0.0, 0.0])
 
+            # for each boat
             for boat in boats:
+                # get their position and distance
                 target = boat.receive()
-            if target is None:
-                continue
+                if target is None:
+                    continue
 
-            target_position = np.array(geo.conversion_spherique_cartesien(target))
-            delta_position = target_position - current_position
-            distance = np.linalg.norm(delta_position)
+                target_position = np.array(geo.conversion_spherique_cartesien(target))
+                delta_position = target_position - current_position
+                distance = np.linalg.norm(delta_position)
 
-            if distance < safe_distance:
-                repulsion_force -= repulsion_weight * delta_position / distance
-            else:
-                attraction_force += attraction_weight * delta_position / distance
+                # update the total force
+                # if too close
+                if distance < safe_distance:
+                    total_force -= repulsion_weight * delta_position**2 / distance
 
-            total_force = attraction_force + repulsion_force
+                # if far away
+                else:
+                    total_force += attraction_weight * delta_position**2 / distance
+            
+
+            # Compute the heading to follow
             target_heading = -np.degrees(np.arctan2(total_force[1], total_force[0]))
 
+            # get current heading
             current_heading = self.get_current_heading()
+            
+            # error
             error = current_heading - target_heading
-            if error > 180:
-            error -= 360
-            elif error < -180:
-            error += 360
+            if error > 180: error -= 360
+            elif error < -180: error += 360
             correction = self.Kp * error
-
-            base_speed = self.max_speed * 0.9
+            
+            # speed proportionnal to the total force
+            base_speed = self.max_speed * np.linalg.norm(total_force)/100
             left_motor = base_speed + correction
             right_motor = base_speed - correction
 
@@ -544,14 +554,13 @@ class Navigation:
 
             self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
 
-            print("Attraction:", attraction_force, "Repulsion:", repulsion_force, 
-              "Total Force:", total_force, "Error:", round(error, 2), end="\r")
+            print("Total Force:", round(total_force[0], 2), round(total_force[1], 2),
+                  "Speed:", round(base_speed,2),
+                  "Target heading:", target_heading,
+                  "Error:", round(error, 2), end="\r")
             time.sleep(self.dt)
         
         
-
-
-
 
 
 
