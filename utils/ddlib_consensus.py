@@ -534,11 +534,11 @@ class Navigation:
                 # update the total force
                 # if too close
                 if distance < safe_distance:
-                    total_force -= repulsion_weight * delta_position / distance**2
+                    total_force += repulsion_weight * delta_position / distance**2
 
                 # if far away
                 else:
-                    total_force += attraction_weight * delta_position / distance**2
+                    total_force -= attraction_weight * delta_position / distance**2
 
                 print("DISTANCE=", distance)
             
