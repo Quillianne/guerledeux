@@ -516,6 +516,7 @@ class Navigation:
                 # get their position and distance
                 target = boat.receive()
                 if target is None:
+                    print("Target:", target, "from boat:", boat.client)
                     continue
 
                 target_position = np.array(geo.conversion_spherique_cartesien(target))
@@ -582,6 +583,7 @@ class Client:
         pass
 
     def receive(self):
+        """returns the last data received from the server, as gsp couple"""
         self.connect()
         data = self.client.recv(1024)
         #print(data)
