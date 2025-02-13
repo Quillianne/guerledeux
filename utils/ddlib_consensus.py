@@ -559,10 +559,6 @@ class Navigation:
                   "Target heading:", target_heading,
                   "Error:", round(error, 2), end="\r")
             time.sleep(self.dt)
-        
-        
-
-
 
 class Client:
     def __init__(self, server_ip, port=5000):     
