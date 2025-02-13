@@ -486,6 +486,81 @@ class Navigation:
             np.savez("log/follow_boat.npz", history=self.history)
             print("Fin de la navigation")
 
+    def attraction_repulsion(self, repuls_weight=1.0, attract_weight=1.0, port=5000):
+        # gather the boats used for the consensus (stored in config.txt)
+        boats = []
+        with open("config.txt", "r") as file:
+            for line in file:
+                ip = "172.20.25.2" + line
+                boats.append(Client(ip, int(port)))
+
+        # Initialize variables for attraction and repulsion
+        attraction_weight = 1.0
+        repulsion_weight = 1.0
+        safe_distance = 15.0  # Safe distance to maintain from other boats
+
+        while True:
+            current_position = np.array(self.gps.get_coords())
+
+            # verify the data
+            if current_position[0] is None or current_position[1] is None:
+                # use last value if None
+                current_position = self.gps.gps_position
+
+            total_force = np.array([0.0, 0.0])
+
+            # for each boat
+            for boat in boats:
+                # get their position and distance
+                target = boat.receive()
+                if target is None:
+                    continue
+
+                target_position = np.array(geo.conversion_spherique_cartesien(target))
+                delta_position = target_position - current_position
+                distance = np.linalg.norm(delta_position)
+
+                # update the total force
+                # if too close
+                if distance < safe_distance:
+                    total_force -= repulsion_weight * delta_position**2 / distance
+
+                # if far away
+                else:
+                    total_force += attraction_weight * delta_position**2 / distance
+            
+            
+            # Compute the heading to follow
+            target_heading = -np.degrees(np.arctan2(total_force[1], total_force[0]))
+
+            # get current heading
+            current_heading = self.get_current_heading()
+            
+            # error
+            error = current_heading - target_heading
+            if error > 180: error -= 360
+            elif error < -180: error += 360
+            correction = self.Kp * error
+            
+            # speed proportionnal to the total force
+            base_speed = self.max_speed * np.linalg.norm(total_force)/100
+            left_motor = base_speed + correction
+            right_motor = base_speed - correction
+
+            left_motor = np.clip(left_motor, -self.max_speed, self.max_speed)
+            right_motor = np.clip(right_motor, -self.max_speed, self.max_speed)
+
+            self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
+
+            print("Total Force:", round(total_force[0], 2), round(total_force[1], 2),
+                  "Speed:", round(base_speed,2),
+                  "Target heading:", target_heading,
+                  "Error:", round(error, 2), end="\r")
+            time.sleep(self.dt)
+        
+        
+
+
 
 class Client:
     def __init__(self, server_ip, port=5000):     
