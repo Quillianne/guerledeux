@@ -40,6 +40,11 @@ class IMUCalibration:
         xW = self.acquire_measurement("mag", "Ouest a plat")
         xU = self.acquire_measurement("mag", "Vertical Z vers le nord")
 
+        print(xN)
+        print(xS)
+        print(xW)
+        print(xU)
+
         # Constantes
         I = np.radians(64)  # Inclinaison du champ magnetique en radians
         beta_mag = 46e-6    # Intensite du champ magnetique en Tesla
