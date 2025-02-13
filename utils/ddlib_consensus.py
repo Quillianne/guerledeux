@@ -539,6 +539,8 @@ class Navigation:
                 # if far away
                 else:
                     total_force += attraction_weight * delta_position / distance**2
+
+                print("DISTANCE=", distance)
             
 
             # Compute the heading to follow
