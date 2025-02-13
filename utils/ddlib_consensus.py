@@ -88,7 +88,7 @@ class IMU:
 
         yaw = -np.arctan2(mag[1, 0], mag[0, 0])
         
-        return roll, pitch, yaw
+        return 0,0,yaw
 
 class GPS():
     def __init__(self, debug = False):
