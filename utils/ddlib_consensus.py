@@ -521,9 +521,7 @@ class Navigation:
                 if target is None or (isinstance(target, tuple) and any(t is None for t in target)):
                     continue
 
-                print("TARGET:", target, end="\r")
                 target_position = np.array(geo.conversion_spherique_cartesien(target))
-                print("TARGET POSITION:", target_position, end="\r")
                 delta_position = target_position - current_position
                 distance = np.linalg.norm(delta_position)
 
