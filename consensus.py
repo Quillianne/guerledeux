@@ -21,7 +21,7 @@ Nav = ddlib.Navigation(imu, gps, arduino, Kp=2)
 # time.sleep(10)
 # Nav.return_home()
 hostname = socket.gethostname()
-number = hostname.split("ddboat")[1]
+number = int(hostname.split("ddboat")[1])
 #Nav.attraction_repulsion_follow(number)
 global dephasage
 dephasage = (2 * np.pi * 18) / (number-1)
