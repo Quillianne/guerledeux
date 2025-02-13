@@ -538,7 +538,7 @@ class Navigation:
             
 
             # Compute the heading to follow
-            target_heading = -np.degrees(np.arctan2(total_force[1], total_force[0]))
+            target_heading = np.degrees(np.arctan2(total_force[1], total_force[0]))
 
             # get current heading
             current_heading = self.get_current_heading()
