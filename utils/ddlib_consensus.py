@@ -515,7 +515,7 @@ class Navigation:
             for boat in boats:
                 # get their position and distance
                 target = boat.receive()
-                if target is None:
+                if target is None or (isinstance(target, tuple) and any(t is None for t in target)):
                     print("Target:", target, "from boat:", boat.client)
                     continue
 
