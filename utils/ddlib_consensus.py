@@ -491,7 +491,7 @@ class Navigation:
         boats = []
         with open("config.txt", "r") as file:
             for line in file:
-                if line == "num\n":
+                if (line == str(num) + "\n") or (line == str(num)):
                     continue
                 ip = "172.20.25.2" + line
                 boats.append(Client(ip, int(port)))
@@ -560,6 +560,202 @@ class Navigation:
                   "Error:", round(error, 2), end="\r")
             time.sleep(self.dt)
         
+    def attraction_repulsion_follow(self, num, port=5000,
+                                    repulsion_weight=1.0, attraction_weight=1.0,
+                                    follow_weight=1.5, follow_distance=10.0,
+                                    safe_distance=15.0):
+        """
+        Combine l'attraction/répulsion entre tous les bateaux et
+        l'effet de "suivi" (boat i suit boat i-1, par indice circulaire).
+        Le bateau 'num' correspond à ce code (celui qui exécute cette fonction).
+
+        :param num: Numéro du bateau courant (ex: 05).
+        :param port: Port TCP où sont écoutées les positions.
+        :param repulsion_weight: Poids de la force de répulsion en dessous de 'safe_distance'.
+        :param attraction_weight: Poids de la force d'attraction au-delà de 'safe_distance'.
+        :param follow_weight: Poids de la force de suivi du "leader".
+        :param follow_distance: Distance souhaitée derrière le leader.
+        :param safe_distance: Distance en dessous de laquelle on repousse les autres bateaux.
+        """
+        num = str(num)
+
+        ################################################################
+        # 1) Lecture de config.txt pour obtenir la liste "all_boats".
+        ################################################################
+        all_boats_nums = []
+        with open("config.txt", "r") as file:
+            for line in file:
+                line = line.strip()
+                if not line:
+                    continue
+                all_boats_nums.append(line)  # ex: 01, 02, 03, etc.
+
+        # Vérifier que nous avons au moins 2 bateaux
+        if len(all_boats_nums) < 2:
+            print("ERREUR : il faut au moins 2 bateaux dans config.txt !")
+            return
+
+        # Trouver l'index du bateau courant dans all_boats_nums
+        try:
+            my_index = all_boats_nums.index(num)
+        except ValueError:
+            print(f"ERREUR : le bateau {num} n'est pas dans config.txt !")
+            return
+
+        # Déterminer l'indice du "leader" (ex: i suit i-1 en mod N)
+        #  => boat 0 suit boat N-1
+        leader_index = (my_index - 1) % len(all_boats_nums)
+        leader_num = all_boats_nums[leader_index]
+
+        ################################################################
+        # 2) Créer les clients pour *tous* les bateaux (sauf moi-même)
+        #    afin de faire attraction/répulsion + suivi.
+        ################################################################
+        # Exemple: "172.20.25.2(num)"
+        # On stocke dans un dict boat_clients[num_bateau] = Client(...)
+        boat_clients = {}
+        for other_num in all_boats_nums:
+            if other_num == num:
+                continue  # pas de client vers soi-même
+            ip = "172.20.25.2" + str(other_num)
+            boat_clients[other_num] = Client(ip, port)
+
+        # On pourra ensuite récupérer la position de "leader_num" et celle des autres
+        # pour le calcul d'attraction/répulsion.
+
+        ################################################################
+        # 3) Mécanisme pour ne pas interroger un même bateau + d'1 fois/sec
+        ################################################################
+        last_time_asked = {bn: 0.0 for bn in boat_clients.keys()}
+        last_positions = {bn: None for bn in boat_clients.keys()}
+
+
+        from math import atan2, degrees
+
+        # Boucle principale
+        print("[Boat {}] Starting attraction_repulsion_follow with leader={}".format(num,leader_num))
+
+        while True:
+            current_time = time.time()
+
+            # => 3.1) Récupérer position DU BATEAU COURANT (GPS local)
+            current_position = np.array(self.gps.get_coords())
+            # S'il n'y a pas de mesure GPS valide, on utilise la dernière position connue
+            if (current_position[0] is None) or (current_position[1] is None):
+                # fallback
+                if self.gps.gps_position is None:
+                    # On n'a absolument aucune position => on attend un peu
+                    print("No valid GPS yet, waiting...")
+                    time.sleep(1)
+                    continue
+                else:
+                    current_position = np.array(geo.conversion_spherique_cartesien(self.gps.gps_position))
+
+            # => 3.2) Mettre à jour les positions de TOUS LES AUTRES bateaux
+            #         1 fois par seconde max
+            for bn, client in boat_clients.items():
+                if (current_time - last_time_asked[bn]) >= 1.0:  # 1 seconde
+                    # On interroge ce bateau
+                    data = client.receive()  # format (lat, lon)
+                    if data is not None:
+                        # Convertir (lat, lon) en (x, y)
+                        last_positions[bn] = np.array(geo.conversion_spherique_cartesien(data))
+                    last_time_asked[bn] = current_time
+
+            # => 3.3) Calcul de la force d'attraction/répulsion
+            total_force = np.array([0.0, 0.0])
+
+            for bn, other_pos in last_positions.items():
+                if other_pos is None:
+                    continue  # on n'a pas encore de position pour ce bateau
+                delta_pos = other_pos - current_position
+                dist = np.linalg.norm(delta_pos)
+                if dist < 1e-6:
+                    continue
+
+                # Repulsion ou attraction
+                if dist < safe_distance:
+                    # Repulsion
+                    # ex: -(repulsion_weight * delta^2 / dist)
+                    total_force -= repulsion_weight * (delta_pos**2) / dist
+                else:
+                    # Attraction
+                    # ex: +(attraction_weight * delta^2 / dist)
+                    total_force += attraction_weight * (delta_pos**2) / dist
+
+            # => 3.4) Calcul de la force de "follow" (on suit le leader)
+            leader_pos = last_positions.get(leader_num, None)
+            if leader_pos is not None:
+                # On imagine reproduire la logique "dir_leader"
+                #  Mais ici, on n'a pas le heading du leader => on peut
+                #  soit juste "attirer" derrière lui, soit reconstituer un heading
+                #  approximatif. Pour faire simple, on va viser la position
+                #  "leader_pos - follow_distance" dans l'axe leader,
+                #  ou plus simplement => on se contente d'une "force" nous poussant
+                #  vers (leader_pos) à distance follow_distance.
+                #  => Force follow = follow_weight * ( (leader_pos - offset) - current_pos )
+                #  Approach simple: si dist > follow_distance, on attire, sinon on repousse
+                delta_leader = leader_pos - current_position
+                dist_leader = np.linalg.norm(delta_leader)
+                if dist_leader < 1e-6:
+                    pass
+                else:
+                    direction_leader = delta_leader / dist_leader
+                    # On veut rester à 'follow_distance'
+                    if dist_leader > follow_distance:
+                        # attPull = follow_weight * (dist_leader - follow_distance)
+                        attPull = follow_weight * (dist_leader - follow_distance)
+                        total_force += attPull * direction_leader
+                    elif dist_leader < follow_distance:
+                        # repPush = follow_weight * (follow_distance - dist_leader)
+                        repPush = follow_weight * (follow_distance - dist_leader)
+                        total_force -= repPush * direction_leader
+
+            # => 3.5) Convertir la force en un heading-cible + intensité
+            fx, fy = total_force
+            # Si total_force est (0,0), on n'avance pas
+            normF = np.linalg.norm(total_force)
+            if normF < 1e-6:
+                # on peut décider de s'arrêter
+                self.arduino_driver.send_arduino_cmd_motor(0, 0)
+                print("[Boat", num, "] Force=0 => Stop", end="\r")
+                time.sleep(self.dt)
+                continue
+
+            # heading cible
+            target_heading = -degrees(atan2(fy, fx))
+
+            # heading actuel
+            current_heading = self.get_current_heading()
+
+            # erreur
+            error = current_heading - target_heading
+            # Ramener l’erreur dans [-180,180]
+            if error > 180:
+                error -= 360
+            elif error < -180:
+                error += 360
+
+            correction = self.Kp * error
+
+            # Vitesse proportionnelle à la norme de la force
+            #  normF / 100 => comme dans votre code initial
+            base_speed = self.max_speed * (normF / 100.0)
+
+            base_speed = np.clip(base_speed, 0, self.max_speed)
+
+            left_motor = base_speed + correction
+            right_motor = base_speed - correction
+
+            left_motor = np.clip(left_motor, -self.max_speed, self.max_speed)
+            right_motor = np.clip(right_motor, -self.max_speed, self.max_speed)
+
+            self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
+
+            print("[Boat {}] NormF={} -> spd={} TH={} Err={}".format(
+                num, round(normF, 2), round(base_speed, 2), round(target_heading, 2), round(error, 2)), end="\r")
+
+            time.sleep(self.dt)
         
 
 
