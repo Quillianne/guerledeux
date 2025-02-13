@@ -381,7 +381,8 @@ class Navigation:
         self.arduino_driver.send_arduino_cmd_motor(0, 0)
     
     def return_home(self):
-        self.follow_gps((48.19904833333333, -3.0148149999999996), cartesian = False, distance = 6)
+        self.follow_gps((48.1990856, -3.0155828), cartesian = False, distance = 6)
+        self.follow_gps((48.19904833333333, -3.0148149999999996), cartesian = False, distance = 7)
 
 
     def stay_at(self, point, cartesien=False):
