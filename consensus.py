@@ -10,20 +10,10 @@ import arduino_driver_v2 as arddrv
 
 gps = ddlib.GPS()
 imu = ddlib.IMU()
+arduino = arddrv.ArduinoIO()
 
+Nav = ddlib.Navigation(imu, gps, arduino)
 
-try:
-    while True:
-        roll, pitch, yaw = imu.get_euler_angles()
-        print("Yaw:", np.degrees(yaw), "\r", end="")
-        time.sleep(0.01)
-
-except KeyboardInterrupt:
-    print("\nArrêt du programme.")
-
-
-#arduino = arddrv.ArduinoIO()
-
-#Nav = ddlib.Navigation(imu, gps, arduino)
-
-#Nav.follow_gps((48.19904833333333, -3.0148149999999996), cartesian = False, distance = 6)
+Nav.follow_gps((48.20010, -3.01573), cartesian = False, distance = 5)
+time.sleep(10)
+Nav.return_home()
