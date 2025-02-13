@@ -602,7 +602,7 @@ class Navigation:
         try:
             my_index = all_boats_nums.index(num)
         except ValueError:
-            print(f"ERREUR : le bateau {num} n'est pas dans config.txt !")
+            print("ERREUR : le bateau {} n'est pas dans config.txt !".format(num))
             return
 
         # Déterminer l'indice du "leader" (ex: i suit i-1 en mod N)
@@ -721,7 +721,7 @@ class Navigation:
             if normF < 1e-6:
                 # on peut décider de s'arrêter
                 self.arduino_driver.send_arduino_cmd_motor(0, 0)
-                print("[Boat", num, "] Force=0 => Stop", end="\r")
+                #print("[Boat", num, "] Force=0 => Stop", end="\r")
                 time.sleep(self.dt)
                 continue
 
