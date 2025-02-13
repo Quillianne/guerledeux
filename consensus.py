@@ -12,7 +12,7 @@ gps = ddlib.GPS()
 imu = ddlib.IMU()
 arduino = arddrv.ArduinoIO()
 
-Nav = ddlib.Navigation(imu, gps, arduino)
+Nav = ddlib.Navigation(imu, gps, arduino, Kp=2)
 
 Nav.follow_gps((48.20010, -3.01573), cartesian = False, distance = 5)
 time.sleep(10)
