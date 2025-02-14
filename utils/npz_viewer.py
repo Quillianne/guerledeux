@@ -136,4 +136,4 @@ def create_trajectory_gif(npz_file, gif_output="trajectory.gif", downsample=1):
 
 if __name__ == "__main__":
     # Example usage: downsample by 10
-    create_trajectory_gif("trajectory.npz", "trajectory.gif", downsample=10)
+    create_trajectory_gif("log/trajectory12.npz", "log/trajectory12.gif", downsample=40)
