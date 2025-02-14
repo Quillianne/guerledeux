@@ -27,9 +27,9 @@ global dephasage
 dephasage = (2 * np.pi * 18) / (number-1)
 point_devant_ponton = (48.1990856, -3.0155828)
 
-def circle_trajectory(t, R = RAYON_CIRCLE, f = FREQUENCE_CIRCLE, M = point_devant_ponton):  #fonction qui retourne le point a rejoindre à l'instant t (cartesien)
+def circle_trajectory(t, R = RAYON_CIRCLE, f = FREQUENCE_CIRCLE, M = point_devant_ponton):  #function that returns the point to reach at time t (cartesian)
     """
-    dessine un cercle de rayon R autour du point M
+    draws a circle of radius R around point M
     """
     a0, a1 = geo_conversion.conversion_spherique_cartesien(M)
 
@@ -38,9 +38,9 @@ def circle_trajectory(t, R = RAYON_CIRCLE, f = FREQUENCE_CIRCLE, M = point_devan
 
     return x,y
 
-def circle_trajectory_dot(t, f = FREQUENCE_CIRCLE, R = RAYON_CIRCLE):  #fonction qui retourne la dérivé du point a rejoindre à l'instant t (cartesien)    
+def circle_trajectory_dot(t, f = FREQUENCE_CIRCLE, R = RAYON_CIRCLE):  #function that returns the derivative of the point to reach at time t (cartesian)    
     """
-    fonction qui retourne la dérivée du cercle
+    function that returns the derivative of the circle
     """
     x_dot = 2*np.pi*R*f*np.cos(2*np.pi*f*t + dephasage)
     y_dot = -2*np.pi*R*f*np.sin(2*np.pi*f*t + dephasage)
@@ -54,7 +54,7 @@ Nav.follow_gps((48.1990856, -3.0155828), cartesian = False, distance = 5)
 
 time.sleep(10)
 
-print("demarrage suivi de trajectoire")
+print("starting trajectory following")
 Nav.follow_trajectory(circle_trajectory, circle_trajectory_dot)
 
 Nav.return_home()
