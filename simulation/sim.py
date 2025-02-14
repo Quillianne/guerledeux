@@ -5,7 +5,7 @@ import math
 
 # === Paramètres globaux de la simulation ===
 
-N = 10  # Nombre de bateaux simulés
+N = 5  # Nombre de bateaux simulés
 np.random.seed(0)  # Pour avoir des résultats reproductibles (facultatif)
 
 # Positions initiales aléatoires dans un carré [0,100]x[0,100]
@@ -19,8 +19,8 @@ headings = np.random.rand(N) * 360  # entre 0° et 360°
 
 # Paramètres pour l'algo attraction/répulsion
 safe_distance = 15.0         # Distance en-dessous de laquelle on repousse
-repulsion_weight = 0
-attraction_weight = 0
+repulsion_weight = 1
+attraction_weight = 1
 
 # Paramètres pour le suivi
 # Ici, boat i suit boat (i-1) modulo N (vous pouvez inverser pour que i suive i+1).

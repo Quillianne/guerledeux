@@ -6,12 +6,12 @@ import datetime
 import socket
 import threading
 
-from utils.roblib import *  # Importation des fonctions nécessaires
+from utils.roblib import *  # Importing necessary functions
 import utils.geo_conversion as geo
 
-# Ajouter le chemin vers le dossier des drivers
+# Add path to the drivers folder
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'drivers-ddboat-v2'))
-# Ajouter le chemin vers le dossier de log
+# Add path to the log folder
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'log'))
 import imu9_driver_v2 as imudrv
 import gps_driver_v2 as gpsdrv
@@ -19,20 +19,20 @@ import gps_driver_v2 as gpsdrv
 
 
 class IMU:
-    def __init__(self, dt = 0.01):
+    def __init__(self, dt=0.01):
         self.imu_driver = imudrv.Imu9IO()
         self.A_mag = None
         self.b_mag = None
         self.dt = dt
 
-        # Chargement des calibrations
+        # Load calibrations
         self.load_calibration()
 
-        # Initialisation de la verticale
+        # Initialize vertical direction
         self.g_est = np.array([[0], [0], [1]])
 
     def load_calibration(self):
-        """Charge les matrices de calibration pour le magnétomètre et l'accéléromètre."""
+        """Load the calibration matrices for the magnetometer and accelerometer."""
         hostname = socket.gethostname()
         number = hostname.split("ddboat")[1]
         filename = "calib_" + number + ".txt"
@@ -40,40 +40,38 @@ class IMU:
             lines = f.readlines()
         
         lines = [float(line.strip()) for line in lines]
-        # Assurons-nous d'avoir au moins 12 lignes
+        # Ensure there are at least 12 lines of data
         if len(lines) < 12:
-            raise ValueError("Le fichier doit contenir au moins 12 lignes de données.")
+            raise ValueError("The file must contain at least 12 lines of data.")
 
-        # Extraire les valeurs
+        # Extract values
         xN = np.array(lines[0:3]).reshape(3, 1)
         xS = np.array(lines[3:6]).reshape(3, 1)
         xW = np.array(lines[6:9]).reshape(3, 1)
         xU = np.array(lines[9:12]).reshape(3, 1)
         
+        # Constants
+        I = np.radians(64)  # Magnetic field inclination in radians
+        beta_mag = 46e-6    # Magnetic field intensity in Tesla
 
-        # Constantes
-        I = np.radians(64)  # Inclinaison du champ magnetique en radians
-        beta_mag = 46e-6    # Intensite du champ magnetique en Tesla
-
-        # Calcul du biais (b)
+        # Compute bias (b)
         self.b_mag = -0.5 * (xN + xS)
 
-        # Matrice de reference Y
+        # Reference matrix Y
         Y = beta_mag * np.array([
             [np.cos(I),  0,         -np.sin(I)],
             [0,         -np.cos(I),  0        ],
             [-np.sin(I), -np.sin(I),  np.cos(I)]
         ])
 
-        # Matrice de correction (A)
+        # Correction matrix (A)
         X = np.column_stack([xN + self.b_mag, xW + self.b_mag, xU + self.b_mag])
         self.A_mag = np.dot(X, np.linalg.inv(Y))
     
-        
-        print("Calibration IMU chargée depuis", filename)
+        print("IMU Calibration loaded from", filename)
 
     def get_corrected_measurements(self):
-        """Retourne les mesures corrigées du magnétomètre et de l'accéléromètre."""
+        """Return the corrected magnetometer and accelerometer measurements."""
         mag_raw = np.array(self.imu_driver.read_mag_raw()).reshape(3, 1)
         acc_raw = np.array(self.imu_driver.read_accel_raw()).reshape(3, 1)
 
@@ -81,17 +79,16 @@ class IMU:
 
         return mag_corrected
 
-
     def get_euler_angles(self):
-        """Calcule les angles d'Euler (roll, pitch, yaw) avec correction du gyroscope."""
-        mag = self.get_corrected_measurements()  # Utilise le gyroscope corrigé
-
+        """Compute the Euler angles (roll, pitch, yaw) with gyroscope correction."""
+        mag = self.get_corrected_measurements()  # Use corrected measurements
         yaw = -np.arctan2(mag[1, 0], mag[0, 0])
         
-        return 0,0,yaw
+        return 0, 0, yaw
 
-class GPS():
-    def __init__(self, debug = False):
+
+class GPS:
+    def __init__(self, debug=False):
         self.gps = gpsdrv.GpsIO()
         self.gps.set_filter_speed("0")
         self.gps_position = None
@@ -104,8 +101,8 @@ class GPS():
         """Read GPS data from the serial port."""
         gll_ok, gll_data = self.gps.read_gll_non_blocking()
         if gll_ok:
-            if self.debug == True:
-                print("Debug gll: ", gll_data)
+            if self.debug:
+                print("Debug gll:", gll_data)
             latitude = geo.convert_to_decimal_degrees(gll_data[0], gll_data[1])
             longitude = geo.convert_to_decimal_degrees(gll_data[2], gll_data[3])
             if latitude != 0 and longitude != 0:
@@ -115,15 +112,15 @@ class GPS():
         return self.gps_position
     
     def get_coords(self):
-        """returns the current cartesian coordinates (x,y) of the boat"""
+        """Return the current cartesian coordinates (x, y) of the boat."""
         point = self.get_gps()
-        if point != None:
+        if point is not None:
             self.x, self.y = geo.conversion_spherique_cartesien(point)
         return self.x, self.y
     
     def export_gpx(self, filename="log/output.gpx"):
         """
-        Exports the recorded GPS history to a GPX file, including time stamps.
+        Export the recorded GPS history to a GPX file, including timestamps.
 
         :param filename: The name/path of the output GPX file.
         """
@@ -146,31 +143,28 @@ class GPS():
 
             # Write each GPS point: (lat, lon, datetime)
             for lat, lon, dt in self.gps_history:
-                # Ensure dt is a string in ISO 8601
-                # Example: 2023-02-11T15:04:05Z
+                # Ensure dt is a string in ISO 8601 format
                 if isinstance(dt, datetime.datetime):
-                    # If dt is timezone-aware, it might already be UTC.
-                    # Otherwise, you can manually convert or just append "Z".
                     time_str = dt.isoformat() + "Z"
                 else:
-                    # If you stored dt as a string, ensure it matches ISO 8601
                     time_str = str(dt)
 
                 f.write('      <trkpt lat="{}" lon="{}">\n'.format(lat, lon))
                 f.write('        <time>{}</time>\n'.format(time_str))
-                f.write( '      </trkpt>\n' )
+                f.write('      </trkpt>\n')
 
             # Write footer
             f.write(gpx_footer)
 
+
 class Navigation:
     def __init__(self, imu, gps, arduino_driver, Kp=1.0, max_speed=250):
         """
-        Initialize Navigation system.
+        Initialize the Navigation system.
         
         :param imu: IMU instance to get the current heading.
         :param gps: GPS instance to get the current coordinates.
-        :param arduino: Arduino instance to control the motors.
+        :param arduino_driver: Arduino instance to control the motors.
         :param Kp: Proportional gain for error correction.
         :param max_speed: Maximum speed for the motors.
         """
@@ -183,15 +177,15 @@ class Navigation:
         self.max_speed = max_speed  # Maximum motor speed
         self.history = []
 
-    def get_z_acc_mean(self, duree = 0.5):
+    def get_z_acc_mean(self, duree=0.5):
         start_time = time.time()
         mesures = []
 
-        # Capturer les données pendant 'duree' secondes
+        # Capture data for 'duree' seconds
         while time.time() - start_time < duree:
             mesures.append(self.imu_driver.read_accel_raw())
 
-        # Calculer la moyenne des mesures
+        # Compute the average of the measurements
         moyenne = np.mean(mesures, axis=0)
         return moyenne[2]
 
@@ -200,12 +194,12 @@ class Navigation:
         while acc_z < -2800:
             self.arduino_driver.send_arduino_cmd_motor(0, 0)
             acc_z = self.get_z_acc_mean()
-            #print(acc_z)
+            # print(acc_z)
 
         while acc_z > -3500:
             self.arduino_driver.send_arduino_cmd_motor(100, 100)
             acc_z = self.get_z_acc_mean()
-            #print(acc_z)
+            # print(acc_z)
 
         self.arduino_driver.send_arduino_cmd_motor(0, 0)
 
@@ -218,7 +212,7 @@ class Navigation:
         """
         Make the boat follow the desired heading for a given duration.
 
-        :param target_cap: Desired heading in degrees.
+        :param target_heading: Desired heading in degrees.
         :param duration: Time in seconds to maintain the heading.
         """
         start_time = time.time()
@@ -235,7 +229,7 @@ class Navigation:
             correction = self.Kp * error
 
             # Set motor speeds based on correction
-            base_speed = self.max_speed * 0.5  # Base speed at 50% max
+            base_speed = self.max_speed * 0.5  # Base speed at 50% of max
             left_motor = base_speed - correction
             right_motor = base_speed + correction
 
@@ -246,8 +240,8 @@ class Navigation:
             # Send speed commands to motors
             self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
 
-            # Debugging output
-            print("Target:", target_heading, "Current:", round(current_heading, 2), 
+            # Debug output
+            print("Target:", target_heading, "Current:", round(current_heading, 2),
                   "Error:", round(error, 2), end="\r")
 
             time.sleep(self.dt)  # Update rate of 10 Hz
@@ -256,7 +250,7 @@ class Navigation:
         self.arduino_driver.send_arduino_cmd_motor(0, 0)
         print("Navigation complete. Motors stopped.")
     
-    def follow_trajectory(self, f, fdot, duration = 140, stop_motor = True):
+    def follow_trajectory(self, f, fdot, duration=140, stop_motor=True):
         """
         Make the boat follow a trajectory defined by a function f(t) and its derivative fdot(t).
         
@@ -268,16 +262,16 @@ class Navigation:
         while time_elapsed < duration:
             t = time.time()
             time_elapsed = t - t0
-            x, y = f(t) #pos de la cible
-            vx, vy = fdot(t) #v de la cible
-            px, py = self.gps.get_coords() #pos du bateau
-            self.history.append((np.array((x,y)),np.array((px,py))))
-            if px != None and py != None:
-                #calcul du cap à viser
+            x, y = f(t)  # Target position
+            vx, vy = fdot(t)  # Target velocity
+            px, py = self.gps.get_coords()  # Boat position
+            self.history.append((np.array((x, y)), np.array((px, py))))
+            if px is not None and py is not None:
+                # Compute heading to target
                 vector_to_target = np.array([x, y]) - np.array([px, py])
                 distance = np.linalg.norm(vector_to_target)
 
-                heading_to_follow = -np.arctan2(vector_to_target[1], vector_to_target[0])*180/np.pi
+                heading_to_follow = -np.arctan2(vector_to_target[1], vector_to_target[0]) * 180 / np.pi
                 current_heading = self.get_current_heading()
 
                 error = current_heading - heading_to_follow
@@ -287,54 +281,51 @@ class Navigation:
                     error += 360
                 correction = self.Kp * error
 
-                #apliquer une correction proportionelle à la distance de la cible 
+                # Apply a correction proportional to the distance to the target 
                 reference_distance = 4
-                distance_correction = np.tanh(distance/reference_distance)
-                #distance_correction = 1
+                distance_correction = np.tanh(distance / reference_distance)
+                # distance_correction = 1
                 
-                #envoyer la vitesse
+                # Send the speed command
                 base_speed = self.max_speed * 0.9
-                left_motor = distance_correction*base_speed + correction
-                right_motor = distance_correction*base_speed - correction
+                left_motor = distance_correction * base_speed + correction
+                right_motor = distance_correction * base_speed - correction
 
                 left_motor = np.clip(left_motor, -self.max_speed, self.max_speed)
                 right_motor = np.clip(right_motor, -self.max_speed, self.max_speed)
 
                 self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
 
-                #affichage de l'état
-                print("Vitesse moteur:", round(distance_correction*base_speed,2), "D_Corr:", round(distance_correction, 2), 
+                # Display status
+                print("Motor speed:", round(distance_correction * base_speed, 2), "D_Corr:", round(distance_correction, 2),
                       "Error:", round(error, 2), "Distance:", round(distance, 2), end="\r")
                 time.sleep(self.dt)
-        if stop_motor == True:        
+        if stop_motor:
             self.arduino_driver.send_arduino_cmd_motor(0, 0)
         np.savez("trajectory.npz", history=self.history)
         self.history = []
-        #print("Fin de chantier")
+        # print("End of task")
     
     def follow_gps(self, target_coords, cartesian=True, distance=5):
         """
-        Make the boat follow the desired GPS coordinates for a given duration.
+        Make the boat follow the desired GPS coordinates until within a given distance.
 
         :param target_coords: Tuple of target GPS coordinates (latitude, longitude).
-        :param cartesian: If True, enter cartesian coordinates in the 'target_coords' arg, else use GPS coords.
-        :param distance: distance to stop to the target
+        :param cartesian: If True, input cartesian coordinates in the 'target_coords' argument; otherwise use GPS coordinates.
+        :param distance: Distance at which to stop at the target.
         """
 
-        # if the target coordinates are in gps
+        # If the target coordinates are in GPS format
         if not cartesian:
-            # convert them to cartesian
+            # Convert them to cartesian
             target_coords = geo.conversion_spherique_cartesien(target_coords)
         target_coords = np.array(target_coords)
 
         distance_target = np.inf
         while distance_target > distance:
-            
-            # get current gps coordinates in cartesian
-
+            # Get current GPS coordinates in cartesian
             current_coords = np.array(self.gps.get_coords())
-            #print(current_coords)
-            if current_coords[0] != None and current_coords[1] != None:
+            if current_coords[0] is not None and current_coords[1] is not None:
                 # Compute heading to target
                 delta_coords = target_coords - current_coords
                 target_heading = -np.degrees(np.arctan2(delta_coords[1], delta_coords[0]))
@@ -342,13 +333,10 @@ class Navigation:
                 # Compute distance to target
                 distance_target = np.linalg.norm(delta_coords)
 
-
-                # get current heading
+                # Get current heading
                 current_heading = self.get_current_heading()
                 
-                # Error
-                #print(current_heading)
-                #print(target_heading)
+                # Compute error
                 error = current_heading - target_heading
                 if error > 180:
                     error -= 360
@@ -357,13 +345,13 @@ class Navigation:
                 correction = self.Kp * error
 
                 reference_distance = distance
-                distance_correction = np.tanh(distance_target/reference_distance)
+                distance_correction = np.tanh(distance_target / reference_distance)
 
                 # Proportional command to the motors
                 base_speed = self.max_speed * 0.9
 
-                left_motor = distance_correction*base_speed + correction
-                right_motor = distance_correction*base_speed - correction
+                left_motor = distance_correction * base_speed + correction
+                right_motor = distance_correction * base_speed - correction
 
                 # Clip motor speeds within valid range
                 left_motor = np.clip(left_motor, -self.max_speed, self.max_speed)
@@ -371,23 +359,21 @@ class Navigation:
 
                 # Send speed commands to motors
                 self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
-                
 
-                print("Vitesse moteur:", round(distance_correction*base_speed,2), "D_Corr:", round(distance_correction, 2), 
-                        "Error:", round(error, 2), "Distance:", round(distance_target, 2), end="\r")
+                print("Motor speed:", round(distance_correction * base_speed, 2), "D_Corr:", round(distance_correction, 2),
+                      "Error:", round(error, 2), "Distance:", round(distance_target, 2), end="\r")
                 time.sleep(self.dt)
 
-        # Stop the motors after duration
+        # Stop the motors after reaching target
         self.arduino_driver.send_arduino_cmd_motor(0, 0)
     
     def return_home(self):
-        self.follow_gps((48.1990856, -3.0155828), cartesian = False, distance = 6)
-        self.follow_gps((48.19904833333333, -3.0148149999999996), cartesian = False, distance = 20)
-
+        self.follow_gps((48.1990856, -3.0155828), cartesian=False, distance=6)
+        self.follow_gps((48.19904833333333, -3.0148149999999996), cartesian=False, distance=20)
 
     def stay_at(self, point, cartesien=False):
         """
-        This function allow the boat to stay at a desired position point
+        Allow the boat to stay at a desired position.
         """
         if not cartesien:
             point = geo.conversion_spherique_cartesien(point)
@@ -396,28 +382,26 @@ class Navigation:
         while True:
             current_position = np.array(self.gps.get_coords())
             if np.linalg.norm(current_position - point) > 5:
-                self.follow_gps(point, cartesien=cartesien)
+                self.follow_gps(point, cartesian=cartesien)
             time.sleep(0.1)
 
-    def follow_boat(self, boat = 18, port = 5000, distance = 5):
+    def follow_boat(self, boat=18, port=5000, distance=5):
         """
-        This function allows the boat to follow another boat
+        Allow the boat to follow another boat.
         """
-
         ip = "172.20.25." + str(boat)
         print(ip)
         client_boat = Client(ip, port)
         target = None
         current_position = [None, None]
         self.history = []
-        while current_position[0] == None or current_position[1] == None:
+        while current_position[0] is None or current_position[1] is None:
             current_position = np.array(self.gps.get_coords())
-            #print(current_position)
             time.sleep(0.1)
 
-        print("position propre bien recuperee") 
+        print("Own position successfully retrieved")
 
-        while target == None:
+        while target is None:
             target = client_boat.receive()
             print(target)
             time_target_acquired = time.time()
@@ -425,23 +409,19 @@ class Navigation:
 
         target = np.array(geo.conversion_spherique_cartesien(target))
 
-        print("position cible bien recuperee")
+        print("Target position successfully retrieved")
         try:
             while True:
-
                 if time.time() - time_target_acquired > 2:
                     received = client_boat.receive()
-                    if received != None:
+                    if received is not None:
                         target = received
-                        #print(target)
                         target = np.array(geo.conversion_spherique_cartesien(target))
                         print("-------------------  New target acquired  -------------------", end="\r")
                     time_target_acquired = time.time()
 
-                if self.gps.get_coords()[0] != None and self.gps.get_coords()[1] != None and target != None:
+                if self.gps.get_coords()[0] is not None and self.gps.get_coords()[1] is not None and target is not None:
                     current_position = np.array(self.gps.get_coords())
-                    #print("position cible :", target, "position propre :", current_position)
-
                     delta_coords = target - current_position
                     self.history.append((target, current_position))
                     target_heading = -np.degrees(np.arctan2(delta_coords[1], delta_coords[0]))
@@ -457,7 +437,7 @@ class Navigation:
                     correction = self.Kp * error
 
                     reference_distance = 5
-                    distance_correction = np.tanh(distance_target/reference_distance)
+                    distance_correction = np.tanh(distance_target / reference_distance)
 
                     # Proportional command to the motors
                     base_speed = self.max_speed * 0.9
@@ -465,35 +445,32 @@ class Navigation:
                     if distance_target < 5:
                         distance_correction = 0
 
-                    left_motor = distance_correction*base_speed + correction
-                    right_motor = distance_correction*base_speed - correction
+                    left_motor = distance_correction * base_speed + correction
+                    right_motor = distance_correction * base_speed - correction
 
                     # Clip motor speeds within valid range
                     left_motor = np.clip(left_motor, -self.max_speed, self.max_speed)
                     right_motor = np.clip(right_motor, -self.max_speed, self.max_speed)
 
-
-
                     # Send speed commands to motors
                     self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
-                    
 
-                    print("Vitesse moteur:", round(distance_correction*base_speed,2), "D_Corr:", round(distance_correction, 2), 
-                            "Error:", round(error, 2), "Distance:", round(distance_target, 2), end="\r")
+                    print("Motor speed:", round(distance_correction * base_speed, 2), "D_Corr:", round(distance_correction, 2),
+                          "Error:", round(error, 2), "Distance:", round(distance_target, 2), end="\r")
                     time.sleep(self.dt)
         except KeyboardInterrupt:
             self.arduino_driver.send_arduino_cmd_motor(0, 0)
             np.savez("log/follow_boat.npz", history=self.history)
-            print("Fin de la navigation")
+            print("End of navigation")
 
-    def attraction_repulsion(self, num:str, repuls_weight=1.0, attract_weight=1.0, port=5000):
-        # gather the boats used for the consensus (stored in config.txt)
+    def attraction_repulsion(self, num: str, repuls_weight=1.0, attract_weight=1.0, port=5000):
+        # Gather the boats used for consensus (stored in config.txt)
         boats = []
         with open("config.txt", "r") as file:
             for line in file:
                 if (line == str(num) + "\n") or (line == str(num)):
                     continue
-                ip = "172.20.25.2" + line
+                ip = "172.20.25.2" + line.strip()
                 boats.append(Client(ip, int(port)))
 
         # Initialize variables for attraction and repulsion
@@ -507,22 +484,19 @@ class Navigation:
         while True:
 
             current_position = np.array(self.gps.get_coords())
-            # verify the data
+
+            # Verify the data
             if current_position[0] is None or current_position[1] is None:
-                # use last value if None
                 current_position = self.gps.gps_position
                 if current_position is None:
-                    # if no data at all, skip this iteration
                     continue
 
             total_force = np.array([0.0, 0.0])
 
-            # for each boat
+            # For each boat
             for boat in boats:
-                # cooldown before next call
                 if time.time() - t_last_call < 1.0:
                     continue
-                # get their position and distance
                 target = boat.receive()
                 if target is None or (isinstance(target, tuple) and any(t is None for t in target)):
                     continue
@@ -531,8 +505,7 @@ class Navigation:
                 delta_position = target_position - current_position
                 distance = np.linalg.norm(delta_position)
 
-                # update the total force
-                # if too close
+                # Update the total force
                 if distance < safe_distance:
                     total_force += repulsion_weight * delta_position / distance
 
@@ -544,14 +517,15 @@ class Navigation:
             # Compute the heading to follow
             target_heading = np.degrees(np.arctan2(total_force[1], total_force[0]))
 
-            # get current heading
+            # Get current heading
             current_heading = self.get_current_heading()
             print("HEADINGS:", current_heading, target_heading)
             
-            # error
             error = current_heading - target_heading
-            if error > 180: error -= 360
-            elif error < -180: error += 360
+            if error > 180:
+                error -= 360
+            elif error < -180:
+                error += 360
             correction = self.Kp * error
             
             # speed proportionnal to the total force
@@ -565,7 +539,7 @@ class Navigation:
             self.arduino_driver.send_arduino_cmd_motor(left_motor, right_motor)
 
             print("Total Force:", round(total_force[0], 2), round(total_force[1], 2),
-                  "Speed:", round(base_speed,2),
+                  "Speed:", round(base_speed, 2),
                   "Target heading:", target_heading,
                   "Error:", round(error, 2), end="\r")
             time.sleep(self.dt)
@@ -575,22 +549,21 @@ class Navigation:
                                     follow_weight=1.5, follow_distance=10.0,
                                     safe_distance=15.0):
         """
-        Combine l'attraction/répulsion entre tous les bateaux et
-        l'effet de "suivi" (boat i suit boat i-1, par indice circulaire).
-        Le bateau 'num' correspond à ce code (celui qui exécute cette fonction).
+        Combine the attraction/repulsion among all boats and the "follow" effect
+        (boat i follows boat i-1 in a circular order). The boat 'num' is the current boat.
 
-        :param num: Numéro du bateau courant (ex: 05).
-        :param port: Port TCP où sont écoutées les positions.
-        :param repulsion_weight: Poids de la force de répulsion en dessous de 'safe_distance'.
-        :param attraction_weight: Poids de la force d'attraction au-delà de 'safe_distance'.
-        :param follow_weight: Poids de la force de suivi du "leader".
-        :param follow_distance: Distance souhaitée derrière le leader.
-        :param safe_distance: Distance en dessous de laquelle on repousse les autres bateaux.
+        :param num: Number of the current boat (e.g., 05).
+        :param port: TCP port for receiving positions.
+        :param repulsion_weight: Weight of the repulsion force when within 'safe_distance'.
+        :param attraction_weight: Weight of the attraction force beyond 'safe_distance'.
+        :param follow_weight: Weight of the leader-following force.
+        :param follow_distance: Desired distance behind the leader.
+        :param safe_distance: Distance below which other boats are repelled.
         """
         num = str(num)
 
         ################################################################
-        # 1) Lecture de config.txt pour obtenir la liste "all_boats".
+        # 1) Read config.txt to obtain the list "all_boats".
         ################################################################
         all_boats_nums = []
         with open("config.txt", "r") as file:
@@ -598,160 +571,112 @@ class Navigation:
                 line = line.strip()
                 if not line:
                     continue
-                all_boats_nums.append(line)  # ex: 01, 02, 03, etc.
+                all_boats_nums.append(line)
 
-        # Vérifier que nous avons au moins 2 bateaux
         if len(all_boats_nums) < 2:
-            print("ERREUR : il faut au moins 2 bateaux dans config.txt !")
+            print("ERROR: at least 2 boats are required in config.txt!")
             return
 
-        # Trouver l'index du bateau courant dans all_boats_nums
+        # Find the index of the current boat in all_boats_nums
         try:
             my_index = all_boats_nums.index(num)
         except ValueError:
-            print("ERREUR : le bateau {} n'est pas dans config.txt !".format(num))
+            print("ERROR: boat {} is not in config.txt!".format(num))
             return
 
-        # Déterminer l'indice du "leader" (ex: i suit i-1 en mod N)
-        #  => boat 0 suit boat N-1
+        # Determine the leader index (boat i follows boat i-1 modulo N)
         leader_index = (my_index - 1) % len(all_boats_nums)
         leader_num = all_boats_nums[leader_index]
 
         ################################################################
-        # 2) Créer les clients pour *tous* les bateaux (sauf moi-même)
-        #    afin de faire attraction/répulsion + suivi.
+        # 2) Create clients for all boats (except the current boat)
         ################################################################
-        # Exemple: "172.20.25.2(num)"
-        # On stocke dans un dict boat_clients[num_bateau] = Client(...)
         boat_clients = {}
         for other_num in all_boats_nums:
             if other_num == num:
-                continue  # pas de client vers soi-même
+                continue
             ip = "172.20.25.2" + str(other_num)
             boat_clients[other_num] = Client(ip, port)
 
-        # On pourra ensuite récupérer la position de "leader_num" et celle des autres
-        # pour le calcul d'attraction/répulsion.
-
         ################################################################
-        # 3) Mécanisme pour ne pas interroger un même bateau + d'1 fois/sec
+        # 3) Mechanism to avoid querying the same boat more than once per second
         ################################################################
         last_time_asked = {bn: 0.0 for bn in boat_clients.keys()}
         last_positions = {bn: None for bn in boat_clients.keys()}
 
-
         from math import atan2, degrees
 
-        # Boucle principale
-        print("[Boat {}] Starting attraction_repulsion_follow with leader={}".format(num,leader_num))
+        print("[Boat {}] Starting attraction_repulsion_follow with leader={}".format(num, leader_num))
 
         while True:
             current_time = time.time()
 
-            # => 3.1) Récupérer position DU BATEAU COURANT (GPS local)
+            # 3.1) Retrieve the current boat's position (local GPS)
             current_position = np.array(self.gps.get_coords())
-            # S'il n'y a pas de mesure GPS valide, on utilise la dernière position connue
             if (current_position[0] is None) or (current_position[1] is None):
-                # fallback
                 if self.gps.gps_position is None:
-                    # On n'a absolument aucune position => on attend un peu
                     print("No valid GPS yet, waiting...")
                     time.sleep(1)
                     continue
                 else:
                     current_position = np.array(geo.conversion_spherique_cartesien(self.gps.gps_position))
 
-            # => 3.2) Mettre à jour les positions de TOUS LES AUTRES bateaux
-            #         1 fois par seconde max
+            # 3.2) Update positions of all other boats (max once per second)
             for bn, client in boat_clients.items():
-                if (current_time - last_time_asked[bn]) >= 1.0:  # 1 seconde
-                    # On interroge ce bateau
-                    data = client.receive()  # format (lat, lon)
+                if (current_time - last_time_asked[bn]) >= 1.0:
+                    data = client.receive()  # Format: (lat, lon)
                     if data is not None:
-                        # Convertir (lat, lon) en (x, y)
                         last_positions[bn] = np.array(geo.conversion_spherique_cartesien(data))
                     last_time_asked[bn] = current_time
 
-            # => 3.3) Calcul de la force d'attraction/répulsion
+            # 3.3) Compute the attraction/repulsion force
             total_force = np.array([0.0, 0.0])
-
             for bn, other_pos in last_positions.items():
                 if other_pos is None:
-                    continue  # on n'a pas encore de position pour ce bateau
+                    continue
                 delta_pos = other_pos - current_position
                 dist = np.linalg.norm(delta_pos)
                 if dist < 1e-6:
                     continue
 
-                # Repulsion ou attraction
                 if dist < safe_distance:
-                    # Repulsion
-                    # ex: -(repulsion_weight * delta^2 / dist)
                     total_force -= repulsion_weight * (delta_pos**2) / dist
                 else:
-                    # Attraction
-                    # ex: +(attraction_weight * delta^2 / dist)
                     total_force += attraction_weight * (delta_pos**2) / dist
 
-            # => 3.4) Calcul de la force de "follow" (on suit le leader)
+            # 3.4) Compute the "follow" force (follow the leader)
             leader_pos = last_positions.get(leader_num, None)
             if leader_pos is not None:
-                # On imagine reproduire la logique "dir_leader"
-                #  Mais ici, on n'a pas le heading du leader => on peut
-                #  soit juste "attirer" derrière lui, soit reconstituer un heading
-                #  approximatif. Pour faire simple, on va viser la position
-                #  "leader_pos - follow_distance" dans l'axe leader,
-                #  ou plus simplement => on se contente d'une "force" nous poussant
-                #  vers (leader_pos) à distance follow_distance.
-                #  => Force follow = follow_weight * ( (leader_pos - offset) - current_pos )
-                #  Approach simple: si dist > follow_distance, on attire, sinon on repousse
                 delta_leader = leader_pos - current_position
                 dist_leader = np.linalg.norm(delta_leader)
-                if dist_leader < 1e-6:
-                    pass
-                else:
+                if dist_leader >= 1e-6:
                     direction_leader = delta_leader / dist_leader
-                    # On veut rester à 'follow_distance'
                     if dist_leader > follow_distance:
-                        # attPull = follow_weight * (dist_leader - follow_distance)
                         attPull = follow_weight * (dist_leader - follow_distance)
                         total_force += attPull * direction_leader
                     elif dist_leader < follow_distance:
-                        # repPush = follow_weight * (follow_distance - dist_leader)
                         repPush = follow_weight * (follow_distance - dist_leader)
                         total_force -= repPush * direction_leader
 
-            # => 3.5) Convertir la force en un heading-cible + intensité
+            # 3.5) Convert the force into a target heading and magnitude
             fx, fy = total_force
-            # Si total_force est (0,0), on n'avance pas
             normF = np.linalg.norm(total_force)
             if normF < 1e-6:
-                # on peut décider de s'arrêter
                 self.arduino_driver.send_arduino_cmd_motor(0, 0)
-                #print("[Boat", num, "] Force=0 => Stop", end="\r")
                 time.sleep(self.dt)
                 continue
 
-            # heading cible
             target_heading = -degrees(atan2(fy, fx))
-
-            # heading actuel
             current_heading = self.get_current_heading()
 
-            # erreur
             error = current_heading - target_heading
-            # Ramener l’erreur dans [-180,180]
             if error > 180:
                 error -= 360
             elif error < -180:
                 error += 360
 
             correction = self.Kp * error
-
-            # Vitesse proportionnelle à la norme de la force
-            #  normF / 100 => comme dans votre code initial
             base_speed = self.max_speed * (normF / 100.0)
-
             base_speed = np.clip(base_speed, 0, self.max_speed)
 
             left_motor = base_speed + correction
@@ -766,47 +691,42 @@ class Navigation:
                 num, round(normF, 2), round(base_speed, 2), round(target_heading, 2), round(error, 2)), end="\r")
 
             time.sleep(self.dt)
-        
 
 
 
 class Client:
-    def __init__(self, server_ip, port=5000):     
+    def __init__(self, server_ip, port=5000):
         self.host = server_ip
         self.port = port
         self.client = None
-        #self.connect()
-
         self.last_data = None
 
     def connect(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((self.host, self.port))
-        #print("connected DDGOAT to server :", self.host)
+        # print("Connected to server:", self.host)
 
     def send(self, data):
         pass
 
     def receive(self):
-        """returns the last data received from the server, as gsp couple"""
+        """Return the last data received from the server, as a GPS pair."""
         self.connect()
         data = self.client.recv(1024)
-        #print(data)
         data = data.decode()
-        if not data :
-            print("server ", self.host, ": no data received")
+        if not data:
+            print("Server", self.host, ": no data received")
             return None
 
         self.last_data = data
         self.client.close()
-        #print("received :", data, " from server :", self.host)
-        #print("decoded data :", self.serv_decode())
         return self.serv_decode()
     
     def serv_decode(self):
-        """returns the last data received from the server to the gps format"""
+        """Return the last data received from the server in GPS format."""
         decoded_data = self.last_data.split(";")
-        decoded_data = (geo.convert_to_decimal_degrees(decoded_data[0], decoded_data[1][0]), geo.convert_to_decimal_degrees(decoded_data[2], decoded_data[3][0]))
+        decoded_data = (geo.convert_to_decimal_degrees(decoded_data[0], decoded_data[1][0]),
+                        geo.convert_to_decimal_degrees(decoded_data[2], decoded_data[3][0]))
         return decoded_data
 
     def __del__(self):
@@ -815,7 +735,7 @@ class Client:
 
 
 
-# Exemple d'utilisation
+# Example usage
 if __name__ == "__main__":
     imu = IMU()
     roll, pitch, yaw = imu.get_euler_angles()
