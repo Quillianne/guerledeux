@@ -1,5 +1,4 @@
 # Byte-compiled / optimized / DLL files
-*.npz
 *.gpx
 
 __pycache__/
