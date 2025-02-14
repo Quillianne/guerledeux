@@ -23,6 +23,8 @@ for i in range(25):
     arduino.send_arduino_cmd_motor(left_motor, right_motor)
     time.sleep(0.07)
 
+arduino.send_arduino_cmd_motor(112, 112)
+time.sleep(0.2)
 arduino.send_arduino_cmd_motor(0, 0)
 time.sleep(0.5)
 
@@ -31,9 +33,14 @@ for i in range(25):
     arduino.send_arduino_cmd_motor(left_motor, right_motor)
     time.sleep(0.07)
 
+arduino.send_arduino_cmd_motor(112, 112)
+time.sleep(0.2)
 arduino.send_arduino_cmd_motor(0, 0)
 time.sleep(0.5)
 
+
+arduino.send_arduino_cmd_motor(112, 112)
+time.sleep(0.2)
 arduino.send_arduino_cmd_motor(250, 250)
 time.sleep(3)
 
