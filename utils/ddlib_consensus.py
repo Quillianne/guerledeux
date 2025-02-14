@@ -474,14 +474,15 @@ class Navigation:
                 boats.append(Client(ip, int(port)))
 
         # Initialize variables for attraction and repulsion
-        attraction_weight = 1.0
-        repulsion_weight = 1.0
+        attraction_weight = 5.0
+        repulsion_weight = 5.0
         safe_distance = 15.0  # Safe distance to maintain from other boats
 
         t_last_call = time.time()
         target_heading = 0.0
 
         while True:
+
             current_position = np.array(self.gps.get_coords())
 
             # Verify the data
@@ -506,15 +507,19 @@ class Navigation:
 
                 # Update the total force
                 if distance < safe_distance:
-                    total_force -= repulsion_weight * delta_position / distance**2
+                    total_force += repulsion_weight * delta_position / distance
+
+                # if far away
                 else:
-                    total_force += attraction_weight * delta_position / distance**2
+                    total_force -= attraction_weight * delta_position / distance
+            
 
             # Compute the heading to follow
             target_heading = np.degrees(np.arctan2(total_force[1], total_force[0]))
 
             # Get current heading
             current_heading = self.get_current_heading()
+            print("HEADINGS:", current_heading, target_heading)
             
             error = current_heading - target_heading
             if error > 180:
@@ -523,8 +528,8 @@ class Navigation:
                 error += 360
             correction = self.Kp * error
             
-            # Speed proportional to the magnitude of the total force
-            base_speed = self.max_speed * np.linalg.norm(total_force) / 10
+            # speed proportionnal to the total force
+            base_speed = self.max_speed* (0.2 + np.linalg.norm(total_force)/200)
             left_motor = base_speed + correction
             right_motor = base_speed - correction
 
